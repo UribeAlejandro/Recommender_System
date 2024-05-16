@@ -1,0 +1,35 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-ast
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-docstring-first
+      - id: name-tests-test
+      - id: sort-simple-yaml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: detect-private-key
+      - id: check-added-large-files
+        args: ["--maxkb=10000"]
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.7.1
+    hooks:
+      - id: nbstripout
+        args: ["notebooks/"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.4
+    hooks:
+      - id: ruff
+        types_or: [python, pyi, jupyter]
+        args: [--fix]
+      - id: ruff-format
+        types_or: [python, pyi, jupyter]
