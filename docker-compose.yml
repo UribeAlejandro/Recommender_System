@@ -1,0 +1,13 @@
+version: '3.7'
+services:
+  db:
+    image: mongo:latest
+    volumes:
+      - ./database/mongo:/data/db
+    ports:
+      - "27017:27017"
+#
+#  selenium:
+#    image: seleniarm/standalone-firefox:latest
+#    ports:
+#      - "4444:4444"
