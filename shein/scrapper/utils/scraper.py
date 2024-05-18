@@ -1,33 +1,15 @@
 import logging
 import re
-from datetime import datetime
 
 import chromedriver_autoinstaller
-from pymongo import MongoClient
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
-from shein.constants import DATABASE_URL, DEBUG
+from shein.constants import DEBUG
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-def included_in_string(string: str, word_list: list[str]) -> bool:
-    """Check if any word in the list is in the string.
-
-    Parameters
-    ----------
-        string (str): The string to check
-        word_list (List[str]): The list of words to check
-    Returns:
-        bool: True if any word in the list is in the string, False otherwise
-    """
-    for word in word_list:
-        if word in string:
-            return True
-    return False
 
 
 def get_driver() -> webdriver.Chrome:
@@ -85,37 +67,3 @@ def get_max_pagination(driver: webdriver.Chrome, url: str) -> int:
         logger.info("Found %s pages", max_pages)
 
     return max_pages
-
-
-def write_in_database(parent_url: str, product_urls: list[str]) -> None:
-    """
-    Write the product URLs in MongoDB.
-
-    Parameters
-    ----------
-    parent_url : str
-        The parent URL
-    product_urls : List[str]
-        The product URLs
-    """
-    MONGO_CLIENT = MongoClient(DATABASE_URL)
-    DATABASE = MONGO_CLIENT["shein"]
-    COLLECTION = DATABASE["product_urls"]
-
-    try:
-        COLLECTION.create_index("url", unique=True)
-        logger.info("Index created")
-    except Exception as e:
-        logger.warning("Index already exists")
-        logger.exception(e)
-
-    for cleaned_url in product_urls:
-        if COLLECTION.find_one({"url": cleaned_url}):
-            logger.exception("URL already exists in MongoDB")
-
-        logger.info("Adding " + cleaned_url + " to MongoDB")
-        COLLECTION.insert_one(
-            {"url": cleaned_url, "parent_url": parent_url, "status": "pending", "timestamp": datetime.now()}
-        )
-
-    MONGO_CLIENT.close()

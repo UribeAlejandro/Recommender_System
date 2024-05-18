@@ -1,4 +1,4 @@
-from shein.scrapper.products import run
+from shein.scrapper.products.list import list_products
 
 if __name__ == "__main__":
-    run()
+    list_products()

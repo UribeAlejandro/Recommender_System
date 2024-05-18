@@ -5,8 +5,10 @@ from urllib.parse import urlparse
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-from shein.constants import BLACKLISTED_WORDS, DOMAIN, PATH_OUT_JSON, URLS, USE_DB
-from shein.scrapper.utils import get_driver, get_max_pagination, included_in_string, write_in_database
+from shein.constants import BLACKLISTED_WORDS, DATABASE_NAME, DOMAIN, PATH_OUT_JSON, URLS, USE_DB
+from shein.scrapper.utils.database import get_mongo_database, write_in_database
+from shein.scrapper.utils.scraper import get_driver, get_max_pagination
+from shein.scrapper.utils.text import included_in_string
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -54,7 +56,7 @@ def process_pages(driver: webdriver.Chrome, max_pages: int, url: str) -> list[st
     return product_urls
 
 
-def run() -> None:
+def list_products() -> None:
     """Extract product URLs from categories."""
     driver = get_driver()
 
@@ -66,10 +68,12 @@ def run() -> None:
         product_urls = process_pages(driver, max_pages, url)
 
         if USE_DB:
-            write_in_database(url, product_urls)
+            mongo_database = get_mongo_database(DATABASE_NAME)
+            write_in_database(url, product_urls, mongo_database, "product_urls")
+            mongo_database.client.close()
         else:
             products = {"parent_url": url, "product_urls": product_urls}
-            with open(f"{i}-{PATH_OUT_JSON}", "w") as outfile:
+            with open(f"{PATH_OUT_JSON}-{i}", "w") as outfile:
                 json.dump(products, outfile)
 
     driver.quit()

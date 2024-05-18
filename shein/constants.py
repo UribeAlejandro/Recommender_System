@@ -11,10 +11,11 @@ URLS = [
 # Database
 MONGO_HOST = os.environ.get("MONGO_HOST", "localhost")
 DATABASE_URL = f"mongodb://{MONGO_HOST}:27017/"
+DATABASE_NAME = "shein"
+PRODUCTS_COLLECTION = "product_urls"
 
 # JSON
 PATH_OUT_JSON = "data/raw/products_urls.json"
-
 
 # Text processing
 BLACKLISTED_WORDS = [
