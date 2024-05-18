@@ -1,97 +1,75 @@
 import json
 import logging
-import re
-from datetime import datetime
 from urllib.parse import urlparse
 
-from pymongo import MongoClient
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-from shein.constants import BLACKLISTED_WORDS, DATABASE_URL, DEBUG, DOMAIN, URLS, USE_DB
-from shein.scrapper.utils import get_driver, included_in_string
+from shein.constants import BLACKLISTED_WORDS, DOMAIN, PATH_OUT_JSON, URLS, USE_DB
+from shein.scrapper.utils import get_driver, get_max_pagination, included_in_string, write_in_database
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def extract_list():
-    """Extract URLs from file."""
-    with open(URLS) as file:
-        urls = file.readlines()
-    return urls
+def process_pages(driver: webdriver.Chrome, max_pages: int, url: str) -> list[str]:
+    """
+    Process the pages of a category.
 
+    Parameters
+    ----------
+    driver : webdriver.Chrome
+        Selenium driver
+    max_pages : int
+        The maximum number of pages
+    url : str
+        The category
 
-def run():
-    """Extract product URLs from categories."""
-    if USE_DB:
-        MONGO_CLIENT = MongoClient(DATABASE_URL)
-        DATABASE = MONGO_CLIENT["shein"]
-        COLLECTION = DATABASE["product_urls"]
+    Returns
+    -------
+    List[str]
+        The product URLs
+    """
+    product_urls = []
+    for i in range(1, max_pages + 1):
         try:
-            COLLECTION.create_index("url", unique=True)
-            logger.info("Index created")
-        except Exception:
-            logger.warning("Index already exists")
+            logger.info("Processing page %s of %s", i, max_pages)
+            driver.get(url + "&page=" + str(i))
 
-    driver = get_driver()
-    urls = extract_list()
-    for j, url in enumerate(urls):
-        url = url.strip()
-        print("Processing " + url)
+            products_section = driver.find_element(By.CLASS_NAME, "product-list-v2__container")
+            product_elements = products_section.find_elements(By.CLASS_NAME, "product-list__item")
+            for product in product_elements:
+                href = product.find_element(By.TAG_NAME, "a").get_attribute("href")
+                if not href or included_in_string(href, BLACKLISTED_WORDS):
+                    logger.info("Skipping %s", href)
 
-        driver.get(url)
-
-        try:
-            pagination_text = driver.find_element(By.CLASS_NAME, "sui-pagination__total").text
-            pagination_number = re.sub("\D", "", pagination_text)
-            max_pages = int(pagination_number)
-            if DEBUG:
-                max_pages = min(1, max_pages)  # Limit to 1 page in debug mode
-            logger.info("Found %spages", max_pages)
+                parsed_url = urlparse(href)
+                cleaned_url = parsed_url.scheme + "://" + parsed_url.netloc + parsed_url.path
+                if DOMAIN in parsed_url.netloc and cleaned_url not in product_urls:
+                    product_urls.append(cleaned_url)
         except Exception as e:
-            print("Error getting pagination: " + str(e))
-            max_pages = 1  # If no pagination, assume 1 page of product
-            pass
+            logger.exception("Error processing page: %s", str(e))
+            continue
 
-        for i in range(1, max_pages + 1):
-            product_urls = []
-            try:
-                print(f"Processing page {i} of {max_pages}")  # Progress update
-                driver.get(url + "?page=" + str(i))
-                # driver.get(url)
+    return product_urls
 
-                product_elements = driver.find_elements(By.CLASS_NAME, "product-list__item")
-                for product in product_elements:
-                    href = product.find_element(By.TAG_NAME, "a").get_attribute("href")
-                    if not href or included_in_string(href, BLACKLISTED_WORDS):
-                        logger.info("Skipping %s", href)
 
-                    parsed_url = urlparse(href)
-                    cleaned_url = parsed_url.scheme + "://" + parsed_url.netloc + parsed_url.path
-                    if DOMAIN in parsed_url.netloc and cleaned_url not in product_urls:
-                        try:
-                            if USE_DB:
-                                if COLLECTION.find_one({"url": cleaned_url}):
-                                    print("URL already exists in MongoDB")
-                                    continue
-                                print("Adding " + cleaned_url + " to MongoDB")
-                                COLLECTION.insert_one(
-                                    {"url": cleaned_url, "status": "pending", "timestamp": datetime.now()}
-                                )
-                            else:
-                                product_urls.append(cleaned_url)
-                        except Exception as e:
-                            print("Error adding URL to MongoDB: " + str(e))
-                            pass
-            except Exception as e:
-                print("Error processing page: " + str(e))
-                continue
+def run() -> None:
+    """Extract product URLs from categories."""
+    driver = get_driver()
 
-            if not USE_DB:
-                print("Writing to JSON file")
-                with open(f"product_urls-{j}-{i}.json", "w") as outfile:
-                    json.dump(product_urls, outfile)
+    for i, url in enumerate(URLS):
+        url = url.strip()
+        logger.info("Processing %s", url)
+
+        max_pages = get_max_pagination(driver, url)
+        product_urls = process_pages(driver, max_pages, url)
+
+        if USE_DB:
+            write_in_database(url, product_urls)
+        else:
+            products = {"parent_url": url, "product_urls": product_urls}
+            with open(f"{i}-{PATH_OUT_JSON}", "w") as outfile:
+                json.dump(products, outfile)
 
     driver.quit()
-    if USE_DB:
-        MONGO_CLIENT.close()

@@ -1,22 +1,13 @@
 version: '3.7'
 services:
-#  db:
-#    image: mongo:latest
-#    volumes:
-#      - ./data/db:/data/db
-
-  selenium:
-    image: seleniarm/standalone-firefox:latest
+  db:
+    image: mongo:latest
+    volumes:
+      - ./database/mongo:/data/db
     ports:
-      - "4444:4444"
-
-#  scraper:
-#    build: .
-#    volumes:
-#      - .:/app
-#    depends_on:
-#      - db
-#      - selenium
-#    environment:
-#      - MONGO_HOST=db
-#      - SELENIUM_HOST=selenium
+      - "27017:27017"
+#
+#  selenium:
+#    image: seleniarm/standalone-firefox:latest
+#    ports:
+#      - "4444:4444"
