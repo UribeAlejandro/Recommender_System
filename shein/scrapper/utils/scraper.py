@@ -1,4 +1,5 @@
 import logging
+import random
 import re
 
 import chromedriver_autoinstaller
@@ -13,19 +14,24 @@ logger = logging.getLogger(__name__)
 
 
 def get_driver() -> webdriver.Chrome:
-    """Get a headless Selenium driver.
+    """
+    Get a headless Selenium driver.
 
     Returns
     -------
-        webdriver.Chrome: Selenium driver
+    webdriver.Chrome:
+        Selenium driver
     """
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--incognito")
     options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
     options.add_argument("disable-infobars")
+    options.add_argument("--ignore-ssl-errors")
     options.add_argument("--disable-extensions")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--ignore-certificate-errors")
+    options.add_argument("--user-agent=" + get_user_agent())
 
     chromedriver_autoinstaller.install()
 
@@ -67,3 +73,19 @@ def get_max_pagination(driver: webdriver.Chrome, url: str) -> int:
         logger.info("Found %s pages", max_pages)
 
     return max_pages
+
+
+def get_user_agent() -> str:
+    """
+    Get a random user agent.
+
+    Returns
+    -------
+    str
+        A random user agent
+    """
+    userAgents = [
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:77.0) Gecko/20100101 Firefox/77.0",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",  # noqa
+    ]
+    return random.choice(userAgents)
