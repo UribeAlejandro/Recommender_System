@@ -2,8 +2,8 @@ import os
 
 # Setup
 DOMAIN = "shein.com"  # For checking if the URL is from the same domain
-DEBUG = False  # Set to True to limit to 1 page
-USE_DB = False  # True = MongoDB, False = JSON
+DEBUG = True  # Set to True to limit to 1 page
+USE_DB = True  # True = MongoDB, False = JSON
 URLS = [
     "https://us.shein.com/Pet-Supplies-c-2400.html?sort=10",
 ]
@@ -12,7 +12,34 @@ URLS = [
 MONGO_HOST = os.environ.get("MONGO_HOST", "localhost")
 DATABASE_URL = f"mongodb://{MONGO_HOST}:27017/"
 DATABASE_NAME = "shein"
-PRODUCTS_COLLECTION = "product_urls"
+COLLECTION_INDEX = {
+    "product_urls": [
+        {
+            "keys": "url",
+            "unique": True,
+        }
+    ],
+    "product_details": [
+        {
+            "keys": "title",
+            "unique": False,
+        },
+        {
+            "keys": "url",
+            "unique": True,
+        },
+        {
+            "keys": "product_id",
+            "unique": True,
+        },
+    ],
+    "product_reviews": [
+        {
+            "keys": "product_id",
+            "unique": False,
+        }
+    ],
+}
 
 # JSON
 PATH_OUT_JSON = "data/raw/products_urls.json"
@@ -70,3 +97,5 @@ BLACKLISTED_WORDS = [
     "weekly-picks",
     "youtube.com",
 ]
+LIMIT_TO_3_MAX_REVIEW_PAGES = False
+RETRIES = 3

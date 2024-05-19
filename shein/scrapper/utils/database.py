@@ -3,6 +3,7 @@ from datetime import datetime
 
 from pymongo import MongoClient
 from pymongo.database import Database
+from pymongo.errors import CollectionInvalid
 
 from shein.constants import DATABASE_URL
 
@@ -30,6 +31,30 @@ def get_mongo_database(database_name: str) -> Database:
     return mongo_database
 
 
+def create_collection_index(mongo_database: Database, collection_indexes: dict[str, list[dict[str, str]]]) -> None:
+    """
+    Create indexes for the collections.
+
+    Parameters
+    ----------
+    mongo_database : Database
+        The MongoDB database
+    collection_indexes : Dict[str, List[Dict[str, str]]]
+        The collection indexes
+    """
+    for collection_name, indexes in collection_indexes.items():
+        try:
+            collection = mongo_database.create_collection(collection_name, check_exists=True)
+            logger.info("Created collection %s", collection_name)
+        except CollectionInvalid:
+            logger.exception("Collection already exists: %s", collection_name)
+            collection = mongo_database.get_collection(collection_name)
+
+        for index in indexes:
+            logger.info("Created index %s for collection %s", index["keys"], collection_name)
+            collection.create_index(**index)
+
+
 def write_in_database(parent_url: str, product_urls: list[str], mongo_database: Database, collection_name: str) -> None:
     """
     Write the product URLs in MongoDB.
@@ -46,13 +71,6 @@ def write_in_database(parent_url: str, product_urls: list[str], mongo_database: 
         The collection name
     """
     collection = mongo_database[collection_name]
-
-    try:
-        collection.create_index("url", unique=True)
-        logger.info("Index created")
-    except Exception as e:
-        logger.warning("Index already exists")
-        logger.exception(e)
 
     for cleaned_url in product_urls:
         if collection.find_one({"url": cleaned_url}):
