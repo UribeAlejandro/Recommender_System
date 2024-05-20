@@ -52,7 +52,7 @@ def get_details(driver: webdriver.Chrome, mongo_database: Database) -> None:
 
             product_details_collection.insert_one(product_data)
             process_reviews(driver, mongo_database, text_product_id)
-            products_collection.update_one({"url": url}, {"$set": {"status": "done"}})
+            products_collection.update_one({"url": url}, {"$set": {"status": "complete"}})
         except Exception as e:
             logger.error("Error processing: %s", url)
             logger.exception("%s", str(e))
