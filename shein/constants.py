@@ -4,26 +4,23 @@ import os
 DOMAIN = "shein.com"  # For checking if the URL is from the same domain
 DEBUG = True  # Set to True to limit to 1 page
 USE_DB = True  # True = MongoDB, False = JSON
-URLS = [
-    "https://us.shein.com/Pet-Supplies-c-2400.html?sort=10",
-]
+URLS = ["https://us.shein.com/Pet-Supplies-c-2400.html?sort=10"]
 
 # Database
 MONGO_HOST = os.environ.get("MONGO_HOST", "localhost")
 DATABASE_URL = f"mongodb://{MONGO_HOST}:27017/"
 DATABASE_NAME = "shein"
+COLLECTION_URLS = "product_urls"
+COLLECTION_DETAILS = "product_details"
+COLLECTION_REVIEWS = "product_reviews"
 COLLECTION_INDEX = {
-    "product_urls": [
+    COLLECTION_URLS: [
         {
             "keys": "url",
             "unique": True,
         }
     ],
-    "product_details": [
-        {
-            "keys": "title",
-            "unique": False,
-        },
+    COLLECTION_DETAILS: [
         {
             "keys": "url",
             "unique": True,
@@ -33,7 +30,7 @@ COLLECTION_INDEX = {
             "unique": True,
         },
     ],
-    "product_reviews": [
+    COLLECTION_REVIEWS: [
         {
             "keys": "product_id",
             "unique": False,
