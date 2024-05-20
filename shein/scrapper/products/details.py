@@ -4,27 +4,12 @@ from datetime import datetime
 from pymongo.database import Database
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support.ui import WebDriverWait
+
+from shein.constants import COLLECTION_DETAILS, COLLECTION_URLS
+from shein.scrapper.products.reviews import process_reviews
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-def wait_for_review_image_load(driver: webdriver.Chrome, image_element: WebElement, timeout: int = 15) -> None:
-    """
-    Wait for the review image to load.
-
-    Parameters
-    ----------
-    driver : webdriver.Chrome
-        Selenium driver
-    image_element : WebElement
-        The image element
-    timeout : int (default: 15)
-        Time to wait for the image to load
-    """
-    WebDriverWait(driver, timeout).until_not(lambda d: "sheinsz.ltwebstatic.com" in image_element.get_attribute("src"))
 
 
 def get_details(driver: webdriver.Chrome, mongo_database: Database) -> None:
@@ -38,16 +23,17 @@ def get_details(driver: webdriver.Chrome, mongo_database: Database) -> None:
     mongo_database : Database
         The MongoDB database
     """
-    URL_COLLECTION = mongo_database["product_urls"]
-    PRODUCT_COLLECTION = mongo_database["products"]
-    pending_urls = URL_COLLECTION.find({"status": "pending"}).sort("timestamp", 1)
+    products_collection = mongo_database[COLLECTION_URLS]
+    product_details_collection = mongo_database[COLLECTION_DETAILS]
+
+    pending_urls = products_collection.find({"status": "pending"}).sort("timestamp", 1)
 
     for url in pending_urls:
         url = url["url"]
         logger.info("Processing: %s", url)
 
         try:
-            URL_COLLECTION.update_one({"url": url}, {"$set": {"status": "processing"}})
+            products_collection.update_one({"url": url}, {"$set": {"status": "processing"}})
             driver.get(url)
 
             element_image = driver.find_element(By.CLASS_NAME, "crop-image-container")
@@ -64,8 +50,10 @@ def get_details(driver: webdriver.Chrome, mongo_database: Database) -> None:
                 "product_id": text_product_id,
             }
 
-            PRODUCT_COLLECTION.insert_one(product_data)
+            product_details_collection.insert_one(product_data)
+            process_reviews(driver, mongo_database, text_product_id)
+            products_collection.update_one({"url": url}, {"$set": {"status": "complete"}})
         except Exception as e:
             logger.error("Error processing: %s", url)
             logger.exception("%s", str(e))
-            URL_COLLECTION.update_one({"url": url}, {"$set": {"status": "failed"}})
+            products_collection.update_one({"url": url}, {"$set": {"status": "failed"}})
