@@ -55,7 +55,9 @@ def create_collection_index(mongo_database: Database, collection_indexes: dict[s
             collection.create_index(**index)
 
 
-def write_in_database(parent_url: str, product_urls: list[str], mongo_database: Database, collection_name: str) -> None:
+def write_url_in_database(
+    parent_url: str, product_urls: list[str], mongo_database: Database, collection_name: str
+) -> None:
     """
     Write the product URLs in MongoDB.
 

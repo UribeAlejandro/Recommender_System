@@ -7,7 +7,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 
 from shein.constants import BLACKLISTED_WORDS, DOMAIN, PATH_OUT_JSON, URLS, USE_DB
-from shein.scrapper.utils.database import write_in_database
+from shein.scrapper.utils.database import write_url_in_database
 from shein.scrapper.utils.scraper import get_max_pagination
 from shein.scrapper.utils.text import included_in_string
 
@@ -76,7 +76,7 @@ def list_products(driver: webdriver.Chrome, mongo_database: Database) -> None:
         product_urls = process_pages(driver, max_pages, url)
 
         if USE_DB:
-            write_in_database(url, product_urls, mongo_database, "product_urls")
+            write_url_in_database(url, product_urls, mongo_database, "product_urls")
         else:
             products = {"parent_url": url, "product_urls": product_urls}
             with open(f"{PATH_OUT_JSON}-{i}", "w") as outfile:

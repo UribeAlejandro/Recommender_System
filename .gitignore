@@ -5,6 +5,7 @@
 **/._.DS_Store
 .idea/
 database/mongo/
+img/products/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
