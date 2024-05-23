@@ -6,6 +6,12 @@ DEBUG = True  # Set to True to limit to 1 page
 USE_DB = True  # True = MongoDB, False = JSON
 URLS = ["https://us.shein.com/Pet-Supplies-c-2400.html?sort=10"]
 
+# JSON
+PATH_OUT_JSON = "data/raw/products_urls.json"
+
+# Images
+IMAGE_DIR = "img/products/"
+
 # Database
 MONGO_HOST = os.environ.get("MONGO_HOST", "localhost")
 DATABASE_URL = f"mongodb://{MONGO_HOST}:27017/"
@@ -37,9 +43,6 @@ COLLECTION_INDEX = {
         }
     ],
 }
-
-# JSON
-PATH_OUT_JSON = "data/raw/products_urls.json"
 
 # Text processing
 BLACKLISTED_WORDS = [
@@ -94,5 +97,3 @@ BLACKLISTED_WORDS = [
     "weekly-picks",
     "youtube.com",
 ]
-LIMIT_TO_3_MAX_REVIEW_PAGES = False
-RETRIES = 3
