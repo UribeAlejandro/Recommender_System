@@ -1,19 +1,26 @@
-from os import listdir
-
 import streamlit as st
+from pymongo import MongoClient
+from pymongo.database import Database
 
-from web.constants import IMG_DIRECTORY
+from web.constants import DATABASE_URL
 
 
-@st.cache_data
-def get_files():
+@st.cache_resource
+def get_mongo_database(database_name: str) -> Database:
     """
-    Get the files in the image directory.
+    Set up the MongoDB client.
+
+    Parameters
+    ----------
+    database_name : str
+        The database name
 
     Returns
     -------
-    list
-        The list of files.
+    Database
+        The MongoDB database
     """
-    files = listdir(IMG_DIRECTORY)
-    return files
+    mongo_client = MongoClient(DATABASE_URL)
+    mongo_database = mongo_client[database_name]
+
+    return mongo_database

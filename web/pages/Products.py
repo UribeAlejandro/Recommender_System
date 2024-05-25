@@ -1,11 +1,12 @@
-import time
+import base64
 from math import ceil
 
 import streamlit as st
-from PIL import Image
+from streamlit_card import card
+from streamlit_server_state import no_rerun, server_state
 
-from web.constants import IMG_DIRECTORY
-from web.utils.database import get_files
+from web.constants import COLLECTION_DETAILS, DATABASE_NAME, ROW_SIZE
+from web.utils.database import get_mongo_database
 from web.utils.pages import css, make_sidebar
 
 st.set_page_config(
@@ -15,15 +16,18 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-css()
 make_sidebar()
-
+css()
 
 st.subheader("The best products for your pet! :feet: :feet: :feet:", divider=True)
 with st.spinner("Loading the product list..."):
-    ROW_SIZE = 5
-    files = get_files()
-    time.sleep(1.5)
+    db = get_mongo_database(DATABASE_NAME)
+    collection = db.get_collection(COLLECTION_DETAILS)
+    products = collection.find(
+        {"$and": [{"image_path": {"$exists": True}}, {"image_path": {"$ne": "pending"}}]},
+        {"image_path": 1, "product_id": 1, "title": 1, "_id": False},
+    )
+    products = list(products)
 
     expander = st.expander(label="Search and Filter", expanded=False)
 
@@ -38,25 +42,56 @@ with st.spinner("Loading the product list..."):
 
     grid = st.columns(ROW_SIZE)
     page = st.session_state.get("page", 1)
-    num_batches = ceil(len(files) / batch_size)
-    batch = files[(page - 1) * batch_size : page * batch_size]
+    num_batches = ceil(len(products) / batch_size)
+    batch = products[(page - 1) * batch_size : page * batch_size]
 
     col = 0
-    for image in batch:
+    for product in batch:
         with grid[col]:
-            route = f"{IMG_DIRECTORY}/{image}"
-            image = Image.open(route)
-            new_image = image.resize((200, 200))
-            with st.container(height=300):
-                st.image(new_image)
-                caption = st.button("Bike", key=route)
-                if caption:
-                    st.session_state["product_name"] = "Bike1"
+            title = product["title"]
+            img_route = product["image_path"]
+            product_id = product["product_id"]
+
+            with open(img_route, "rb") as f:
+                data = f.read()
+                encoded = base64.b64encode(data)
+            data = "data:image/png;base64," + encoded.decode("utf-8")
+
+            with st.container(height=400):
+                hasClicked = card(
+                    title="",
+                    text="",
+                    image=data,
+                    key=product_id,
+                    styles={
+                        "card": {
+                            "width": "100%",
+                            "height": "200px",
+                            "margin": "5%",
+                            "box-shadow": "0 0 15px rgba(0,0,0,0.5)",
+                            "display": "flex",
+                            "justify-content": "center",
+                        },
+                        "text": {"position": "absolute", "bottom": -100, "left": 0, "color": "black"},
+                        "filter": {"background-color": "rgba(0, 0, 0, 0)"},
+                    },
+                )
+                st.write(title)
+                if hasClicked:
+                    with no_rerun:
+                        server_state["product_id"] = product_id
+                        server_state["title"] = title
                     st.switch_page("pages/Product.py")
+            #     st.image(new_image)
+            #     caption = st.button(title, key=product_id)
+            #     if caption:
+            #         st.query_params["product_id"] = product_id
+            #         st.query_params["title"] = title
+            #         st.switch_page("pages/Product.py")
 
         col = (col + 1) % ROW_SIZE
 
     st.divider()
-    bottom = st.columns(6)
-    with bottom[2]:
+    bottom = st.columns(7)
+    with bottom[6]:
         page_select = st.selectbox("Page Number", range(1, num_batches + 1), key="page", disabled=num_batches == 1)

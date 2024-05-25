@@ -3,3 +3,5 @@ selenium
 streamlit-authenticator
 streamlit-extras
 streamlit-tags
+streamlit-card
+streamlit-server-state
