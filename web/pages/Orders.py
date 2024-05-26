@@ -1,8 +1,7 @@
 import streamlit as st
-from streamlit_server_state import server_state
 
 from web.constants import FOOTER
-from web.utils.pages import make_sidebar
+from web.utils.pages import get_current_page_name, make_sidebar
 
 st.set_page_config(
     layout="centered",
@@ -13,7 +12,6 @@ st.set_page_config(
 make_sidebar()
 
 
-st.write(server_state.get("name", "F"))
-
+st.header(get_current_page_name())
 
 st.markdown(FOOTER, unsafe_allow_html=True)

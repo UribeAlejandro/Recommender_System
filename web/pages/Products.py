@@ -5,21 +5,22 @@ import streamlit as st
 from streamlit_card import card
 from streamlit_server_state import no_rerun, server_state
 
-from web.constants import COLLECTION_DETAILS, DATABASE_NAME, ROW_SIZE
+from web.constants import COLLECTION_DETAILS, DATABASE_NAME, FOOTER, ROW_SIZE
 from web.utils.database import get_mongo_database
-from web.utils.pages import css, make_sidebar
+from web.utils.pages import hide_image_fullscreen, make_sidebar
 
 st.set_page_config(
     layout="wide",
-    page_icon=":feet:",
+    page_icon="🎁",
     page_title="Products",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="auto",
 )
 
 make_sidebar()
-css()
+hide_image_fullscreen()
 
-st.subheader("The best products for your pet! :feet: :feet: :feet:", divider=True)
+st.header("🎁 Product List")
+st.subheader("Your one-stop shop for all things!", divider=True)
 with st.spinner("Loading the product list..."):
     db = get_mongo_database(DATABASE_NAME)
     collection = db.get_collection(COLLECTION_DETAILS)
@@ -38,7 +39,7 @@ with st.spinner("Loading the product list..."):
         with controls[1]:
             keywords = st.multiselect("Applicable Pet", ["dog", "cat", "rabbit", "hamster", "fish", "bird"])
         with controls[2]:
-            batch_size = st.selectbox("Images per page:", range(25, 150, 25))
+            batch_size = st.selectbox("Images per page:", range(20, 100, 20))
 
     grid = st.columns(ROW_SIZE)
     page = st.session_state.get("page", 1)
@@ -95,3 +96,5 @@ with st.spinner("Loading the product list..."):
     bottom = st.columns(7)
     with bottom[6]:
         page_select = st.selectbox("Page Number", range(1, num_batches + 1), key="page", disabled=num_batches == 1)
+
+st.markdown(FOOTER, unsafe_allow_html=True)

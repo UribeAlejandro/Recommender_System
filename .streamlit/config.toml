@@ -1,9 +1,9 @@
 [theme]
 base="light"
 
-[browser]
-showSidebarNavigation = false
+#[browser]
+#showSidebarNavigation = false
 
 [client]
 showSidebarNavigation = false
-showErrorDetails = false
+showErrorDetails = true

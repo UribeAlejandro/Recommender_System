@@ -6,14 +6,13 @@ from streamlit_server_state import server_state, server_state_lock
 from web.utils.auth import logout
 
 
-def css():
+def hide_image_fullscreen():
     """Hides the fullscreen button in the Streamlit app."""
     st.markdown(
-        """
-        <style>
-            button[title = "View fullscreen"]{
+        """<style>
+        button[title = "View fullscreen"]{
                 visibility: hidden;
-            }
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -43,27 +42,42 @@ def make_sidebar():
     with server_state_lock["authentication_status"]:
         if "authentication_status" not in server_state:
             server_state.authentication_status = False
-
     with st.sidebar:
-        st.title(":dog: Doge Market :dog:")
-        st.write("")
-        st.write("")
+        st.markdown(
+            "<h1><img "
+            'src="https://tung-local.myshopify.com/cdn/shop/products/Doge_1024x1024.png?v=1475122208" '
+            'style="height:50px;">Doge Market</h1>',
+            unsafe_allow_html=True,
+        )
+        st.markdown("<h1>Navigation 🚀</h1>", unsafe_allow_html=True)
 
         if server_state.get("authentication_status", False):
-            st.page_link(icon="🕵️", page="pages/Products.py", label="Products")
-            st.page_link(icon="🔥", page="pages/Hot_Products.py", label="Hot Products")
-            st.page_link(icon="🔥", page="pages/Top_Picks.py", label="Top Picks for you")
-
-            st.write("")
-            st.write("")
-            st.write("")
+            st.markdown("<h3>Products 📒</h3>", unsafe_allow_html=True)
+            st.page_link(
+                icon="🎁",
+                page="pages/Products.py",
+                label="Products List",
+                disabled=not server_state.get("authentication_status", False),
+            )
+            st.page_link(
+                icon="🔥",
+                page="pages/Hot_Products.py",
+                label="Hot Products",
+                disabled=not server_state.get("authentication_status", False),
+            )
+            st.markdown("<h3>Orders 📦</h3>", unsafe_allow_html=True)
+            st.page_link(icon="📦", page="pages/Orders.py", label="Order History", disabled=True)
+            st.markdown("<h3>Reviews 📝</h3>", unsafe_allow_html=True)
+            st.page_link(icon="📝", page="pages/Reviews.py", label="Reviews", disabled=True)
+            st.markdown("<h3>Account 👤</h3>", unsafe_allow_html=True)
+            st.page_link(icon="👤", page="pages/Account.py", label="Account Management", disabled=False)
 
             if server_state.get("username", "guest") != "guest":
                 if st.button("Log out"):
                     logout()
-            else:
-                if st.button("Register"):
-                    st.switch_page("pages/Register.py")
-
+        elif get_current_page_name() == "About":
+            pass
         elif get_current_page_name() != "main":
             st.switch_page("main.py")
+        st.markdown("<h3>About ℹ️</h3>", unsafe_allow_html=True)
+        st.page_link(icon="ℹ️", page="pages/About.py", label="About Us", disabled=False)
