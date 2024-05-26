@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from math import ceil
 
 import streamlit as st
@@ -9,47 +10,52 @@ from web.constants import COLLECTION_DETAILS, COLLECTION_REVIEWS, DATABASE_NAME,
 from web.utils.database import get_mongo_database
 from web.utils.pages import hide_image_fullscreen, make_sidebar
 
-product_id = server_state.get("product_id", None)
+_id = st.session_state.get("_id", None)
 
-if not product_id:
+if not _id:
     st.error("Product not found. Please select a product from the list.")
     with st.spinner("Redirecting to products page..."):
         time.sleep(1.5)
     st.switch_page("pages/Products.py")
 else:
     st.set_page_config(
-        page_title=server_state.get("title", "Product"),
+        page_title=st.session_state.get("title", "Product Details"),
         layout="wide",
         page_icon=":feet:",
-        initial_sidebar_state="auto",
+        initial_sidebar_state="collapsed",
     )
     make_sidebar()
     hide_image_fullscreen()
 
-db = get_mongo_database(DATABASE_NAME)
-products_collection = db.get_collection(COLLECTION_DETAILS)
-product_reviews = db.get_collection(COLLECTION_REVIEWS)
-product = products_collection.find_one({"product_id": product_id})
-reviews = list(product_reviews.find({"product_id": product_id}))
-title = product["title"]
-img_route = product["image_path"]
-product_id = product["product_id"]
-
-
 back = st.button("Back to products", key="back", type="secondary")
-if back:
-    st.switch_page("pages/Products.py")
-st.header(title, divider=True)
+
 with st.spinner("Loading the product details..."):
-    cols = st.columns(3, gap="small")
-    time.sleep(1.5)
+    db = get_mongo_database(DATABASE_NAME)
+    collection_reviews = db.get_collection(COLLECTION_REVIEWS)
+    collection_products = db.get_collection(COLLECTION_DETAILS)
+
+    product_details = collection_products.find_one({"_id": _id})
+    reviews = list(collection_reviews.find({"product_id": product_details["product_id"]}).sort({"timestamp": -1}))
+
+    mean_rating = collection_reviews.aggregate([{"$group": {"_id": _id, "mean": {"$avg": "$rating"}}}])
+    mean_rating = next(mean_rating, {"mean": 0})
+
+    title = product_details["title"]
+    img_route = product_details["image_path"]
+    product_id = product_details["product_id"]
+
+    st.subheader(title, divider=True)
+    cols = st.columns([2, 1, 3], gap="small")
 
     with cols[0]:
         image = Image.open(img_route)
-        st.image(image, use_column_width="never")
-    with cols[1]:
+        st.image(image, use_column_width="always")
+        st.markdown(f"<h4>Mean rating: {mean_rating['mean']:.2f} ⭐</h4>", unsafe_allow_html=True)
+        st.caption("Other products are not included in the purchase.")
+
+    with cols[2]:
         st.subheader("Product description", divider=False)
-        product_description = product["description_items"]
+        product_description = product_details["description_items"]
         with st.container():
             with st.expander(":blue[**Description**]", expanded=True):
                 col1, col2 = st.columns(2)
@@ -57,46 +63,42 @@ with st.spinner("Loading the product details..."):
                     with col1:
                         st.write(f"**{str(k).capitalize()}**")
                     with col2:
-                        st.write(f"*{str(v).capitalize()}*")
-    with cols[2]:
-        st.markdown("<h4>How much do you like this product?</h4>", unsafe_allow_html=True)
-        star_cols = st.columns(5, gap="small")
-        stars = [
-            st.button(":star:" * i, key=f"rating_{i}", type="secondary", disabled=st.session_state.get("rating", False))
-            for i in range(1, 6)
-        ]
-        with star_cols[0]:
-            one_star = stars[0]
-        with star_cols[1]:
-            two_star = stars[1]
-        with star_cols[2]:
-            three_star = stars[2]
-        with star_cols[3]:
-            four_star = stars[3]
-        with star_cols[4]:
-            five_star = stars[4]
-
-    if one_star:
-        st.session_state["rating"] = 1
-        print("One star")
-        st.rerun()
-    if two_star:
-        st.session_state["rating"] = 2
-        print("Two star")
-        st.rerun()
-    if three_star:
-        st.session_state["rating"] = 3
-        print("Three star")
-        st.rerun()
-    if four_star:
-        st.session_state["rating"] = 4
-        print("Four star")
-        st.rerun()
-    if five_star:
-        st.session_state["rating"] = 5
-        print("Five star")
-        st.rerun()
-
+                        st.write(f"{str(v).capitalize()}")
+                with col1:
+                    st.write("**Price**")
+                    st.write("**Product ID**")
+                with col2:
+                    st.write(f"*{product_details.get('price', 1.25)}*")
+                    st.write(f"*{product_id}*")
+            st.markdown("<h4>Review this product!</h4>", unsafe_allow_html=True)
+            if server_state.get("username") == "guest":
+                st.error("You need to be logged in to review this product.")
+            else:
+                with st.form(key="review_form", clear_on_submit=True):
+                    review_cols = st.columns([10, 1], gap="small")
+                    with review_cols[0]:
+                        rating_options = [i * "⭐" for i in range(1, 6)]
+                        rating = st.select_slider(
+                            "Rating",
+                            key="rating",
+                            value=rating_options[2],
+                            options=rating_options,
+                            label_visibility="hidden",
+                        )
+                        review = st.text_area("Review", key="review", max_chars=500, placeholder="Your review here...")
+                        submit = st.form_submit_button("Submit")
+                if submit:
+                    collection_reviews.insert_one(
+                        {
+                            "product_id": product_id,
+                            "nickname": server_state.get("username"),
+                            "review": review,
+                            "rating": len(rating),
+                            "date": time.strftime("%d %b, %Y"),
+                            "timestamp": datetime.now(),
+                        }
+                    )
+                    st.rerun()
     st.divider()
     st.subheader("Product reviews", divider=False)
 
@@ -123,10 +125,14 @@ with st.spinner("Loading the product details..."):
     else:
         st.write("No reviews yet. Be the first to review this product!")
 
-    st.divider()
-    bottom = st.columns(7)
-    with bottom[6]:
+    bottom = st.columns([10, 3, 10])
+    with bottom[1]:
         page_select = st.selectbox(
             "Page Number", range(1, num_batches + 1), key="page_reviews", disabled=num_batches == 1
         )
+
+if back:
+    st.switch_page("pages/Products.py")
+
+st.divider()
 st.markdown(FOOTER, unsafe_allow_html=True)

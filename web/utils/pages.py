@@ -50,6 +50,10 @@ def make_sidebar():
             unsafe_allow_html=True,
         )
         st.markdown("<h1>Navigation 🚀</h1>", unsafe_allow_html=True)
+        st.markdown("<h3>Home 🏠</h3>", unsafe_allow_html=True)
+        st.page_link(icon="🏠", page="main.py", label="Home", disabled=False)
+        st.markdown("<h3>About ℹ️</h3>", unsafe_allow_html=True)
+        st.page_link(icon="ℹ️", page="pages/About.py", label="About Us", disabled=False)
 
         if server_state.get("authentication_status", False):
             st.markdown("<h3>Products 📒</h3>", unsafe_allow_html=True)
@@ -57,27 +61,26 @@ def make_sidebar():
                 icon="🎁",
                 page="pages/Products.py",
                 label="Products List",
-                disabled=not server_state.get("authentication_status", False),
+                disabled=True,
+                # disabled=not server_state.get("authentication_status", False),
             )
             st.page_link(
                 icon="🔥",
-                page="pages/Hot_Products.py",
+                page="main.py",
                 label="Hot Products",
                 disabled=not server_state.get("authentication_status", False),
             )
             st.markdown("<h3>Orders 📦</h3>", unsafe_allow_html=True)
-            st.page_link(icon="📦", page="pages/Orders.py", label="Order History", disabled=True)
+            st.page_link(icon="📦", page="main.py", label="Order History", disabled=True)
             st.markdown("<h3>Reviews 📝</h3>", unsafe_allow_html=True)
-            st.page_link(icon="📝", page="pages/Reviews.py", label="Reviews", disabled=True)
+            st.page_link(icon="📝", page="main.py", label="Reviews", disabled=True)
             st.markdown("<h3>Account 👤</h3>", unsafe_allow_html=True)
-            st.page_link(icon="👤", page="pages/Account.py", label="Account Management", disabled=False)
+            st.page_link(icon="👤", page="main.py", label="Account Management", disabled=True)
 
             if server_state.get("username", "guest") != "guest":
-                if st.button("Log out"):
+                if st.button("Log out", type="primary"):
                     logout()
         elif get_current_page_name() == "About":
             pass
         elif get_current_page_name() != "main":
             st.switch_page("main.py")
-        st.markdown("<h3>About ℹ️</h3>", unsafe_allow_html=True)
-        st.page_link(icon="ℹ️", page="pages/About.py", label="About Us", disabled=False)

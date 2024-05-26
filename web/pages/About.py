@@ -7,19 +7,11 @@ st.set_page_config(
     layout="centered",
     page_icon=":feet:",
     page_title="Hot Products",
-    initial_sidebar_state="auto",
+    initial_sidebar_state="collapsed",
 )
 make_sidebar()
 
-st.markdown(
-    """
-    # Acerca de este sitio
-
-    Este sitio es el proyecto final de la asignatura de **Sistemas de Recomendación** de la
-    **Maestría en Minería de Datos & Descubrimiento del Conocimiento** de la **Universidad de Buenos Aires**.
-
-    Desarrollada por: Alejandro Uribe
-    """
-)
+with open("README.md") as f:
+    st.markdown(f.read())
 
 st.markdown(FOOTER, unsafe_allow_html=True)

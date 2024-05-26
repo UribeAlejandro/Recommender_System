@@ -2,8 +2,9 @@ import base64
 from math import ceil
 
 import streamlit as st
+from pymongo.errors import ServerSelectionTimeoutError
 from streamlit_card import card
-from streamlit_server_state import no_rerun, server_state
+from streamlit_server_state import no_rerun
 
 from web.constants import COLLECTION_DETAILS, DATABASE_NAME, FOOTER, ROW_SIZE
 from web.utils.database import get_mongo_database
@@ -13,7 +14,7 @@ st.set_page_config(
     layout="wide",
     page_icon="🎁",
     page_title="Products",
-    initial_sidebar_state="auto",
+    initial_sidebar_state="collapsed",
 )
 
 make_sidebar()
@@ -22,24 +23,50 @@ hide_image_fullscreen()
 st.header("🎁 Product List")
 st.subheader("Your one-stop shop for all things!", divider=True)
 with st.spinner("Loading the product list..."):
-    db = get_mongo_database(DATABASE_NAME)
-    collection = db.get_collection(COLLECTION_DETAILS)
-    products = collection.find(
-        {"$and": [{"image_path": {"$exists": True}}, {"image_path": {"$ne": "pending"}}]},
-        {"image_path": 1, "product_id": 1, "title": 1, "_id": False},
-    )
-    products = list(products)
+    try:
+        db = get_mongo_database(DATABASE_NAME)
+        collection = db.get_collection(COLLECTION_DETAILS)
+        all_applicable_pets = collection.distinct("description_items.applicable pet")
+        filter_dict = {
+            "$and": [
+                {"image_path": {"$exists": True}},
+                {"image_path": {"$ne": "pending"}},
+                {"title": {"$regex": st.session_state.get("search", ""), "$options": "i"}},
+                {"description_items.applicable pet": {"$in": st.session_state.get("app_pet", all_applicable_pets)}},
+            ]
+        }
+        products = collection.find(
+            filter_dict,
+            {"description_items.applicable pet": 1, "image_path": 1, "title": 1, "product_id": 1, "_id": 1},
+        )
+        products = list(products)
+        applicable_pets = set(list(prod["description_items"]["applicable pet"] for prod in products))
+
+    except ServerSelectionTimeoutError:
+        st.error("Error connecting to the database. Please try again later.")
+        st.stop()
 
     expander = st.expander(label="Search and Filter", expanded=False)
 
     with expander:
         controls = st.columns(3, gap="small")
         with controls[0]:
-            search = st.text_input("Search")
+            search = st.text_input("Product name", key="search")
         with controls[1]:
-            keywords = st.multiselect("Applicable Pet", ["dog", "cat", "rabbit", "hamster", "fish", "bird"])
+            app_pet = st.multiselect(
+                "Applicable Pet", options=all_applicable_pets, default=applicable_pets, key="app_pet"
+            )
         with controls[2]:
-            batch_size = st.selectbox("Images per page:", range(20, 100, 20))
+            batch_size = st.selectbox(
+                "Images per page:",
+                range(20, 100, 20),
+                disabled=len(products) < st.session_state.get("batch_size", 20),
+                key="batch_size",
+            )
+
+    if len(products) == 0:
+        st.error("No products found.")
+        st.stop()
 
     grid = st.columns(ROW_SIZE)
     page = st.session_state.get("page", 1)
@@ -49,9 +76,9 @@ with st.spinner("Loading the product list..."):
     col = 0
     for product in batch:
         with grid[col]:
+            _id = product["_id"]
             title = product["title"]
             img_route = product["image_path"]
-            product_id = product["product_id"]
 
             with open(img_route, "rb") as f:
                 data = f.read()
@@ -59,15 +86,15 @@ with st.spinner("Loading the product list..."):
             data = "data:image/png;base64," + encoded.decode("utf-8")
 
             with st.container(height=400):
-                hasClicked = card(
+                product_card = card(
                     title="",
                     text="",
                     image=data,
-                    key=product_id,
+                    key=str(_id),
                     styles={
                         "card": {
                             "width": "100%",
-                            "height": "200px",
+                            "height": "180px",
                             "margin": "5%",
                             "box-shadow": "0 0 15px rgba(0,0,0,0.5)",
                             "display": "flex",
@@ -78,20 +105,12 @@ with st.spinner("Loading the product list..."):
                     },
                 )
                 st.write(title)
-                if hasClicked:
+                if product_card:
                     with no_rerun:
-                        server_state["product_id"] = product_id
-                        server_state["title"] = title
+                        st.session_state["_id"] = _id
                     st.switch_page("pages/Product.py")
-            #     st.image(new_image)
-            #     caption = st.button(title, key=product_id)
-            #     if caption:
-            #         st.query_params["product_id"] = product_id
-            #         st.query_params["title"] = title
-            #         st.switch_page("pages/Product.py")
 
         col = (col + 1) % ROW_SIZE
-
     st.divider()
     bottom = st.columns(7)
     with bottom[6]:
