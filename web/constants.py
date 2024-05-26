@@ -6,7 +6,6 @@ DATABASE_NAME = "shein"
 COLLECTION_URLS = "product_urls"
 COLLECTION_DETAILS = "product_details"
 COLLECTION_REVIEWS = "product_reviews"
-IMG_DIRECTORY = "img/products"
 ROW_SIZE = 4
 
 FOOTER = """
