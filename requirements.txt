@@ -1,5 +1,7 @@
 streamlit
 selenium
 streamlit-authenticator
-streamlit-modal
-streamlit-navigation-bar
+streamlit-extras
+streamlit-tags
+streamlit-card
+streamlit-server-state
