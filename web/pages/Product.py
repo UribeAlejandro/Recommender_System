@@ -35,14 +35,14 @@ with st.spinner("Loading the product details..."):
     collection_products = db.get_collection(COLLECTION_DETAILS)
 
     product_details = collection_products.find_one({"_id": _id})
-    reviews = list(collection_reviews.find({"product_id": product_details["product_id"]}).sort({"timestamp": -1}))
-
-    mean_rating = collection_reviews.aggregate([{"$group": {"_id": _id, "mean": {"$avg": "$rating"}}}])
-    mean_rating = next(mean_rating, {"mean": 0})
 
     title = product_details["title"]
     img_route = product_details["image_path"]
     product_id = product_details["product_id"]
+
+    already_reviewed = collection_reviews.find_one({"product_id": product_id, "nickname": server_state.get("username")})
+    mean_rating = collection_reviews.aggregate([{"$group": {"_id": _id, "mean": {"$avg": "$rating"}}}])
+    mean_rating = next(mean_rating, {"mean": 0})
 
     st.subheader(title, divider=True)
     cols = st.columns([2, 1, 3], gap="small")
@@ -70,38 +70,58 @@ with st.spinner("Loading the product details..."):
                 with col2:
                     st.write(f"*{product_details.get('price', 1.25)}*")
                     st.write(f"*{product_id}*")
+            st.divider()
             st.markdown("<h4>Review this product!</h4>", unsafe_allow_html=True)
             if server_state.get("username") == "guest":
                 st.error("You need to be logged in to review this product.")
             else:
-                with st.form(key="review_form", clear_on_submit=True):
-                    review_cols = st.columns([10, 1], gap="small")
-                    with review_cols[0]:
-                        rating_options = [i * "⭐" for i in range(1, 6)]
-                        rating = st.select_slider(
-                            "Rating",
-                            key="rating",
-                            value=rating_options[2],
-                            options=rating_options,
-                            label_visibility="hidden",
+                if already_reviewed:
+                    st.write("You have already reviewed this product.")
+                    with st.container(border=True):
+                        rev_cols = st.columns(2, gap="small")
+                        s = ":star:" * already_reviewed["rating"]
+                        with rev_cols[0]:
+                            st.write(f"**{already_reviewed['nickname']}** *{already_reviewed['date']}*")
+                            st.write(s)
+                        with rev_cols[1]:
+                            st.write(f"*{already_reviewed['review']}*")
+
+                    go_to_reviews = st.button("Go to your reviews", key="go_to_reviews", type="secondary")
+                    if go_to_reviews:
+                        st.switch_page("pages/Reviews.py")
+
+                else:
+                    with st.form(key="review_form", clear_on_submit=True):
+                        review_cols = st.columns([10, 1], gap="small")
+                        with review_cols[0]:
+                            rating_options = [i * "⭐" for i in range(1, 6)]
+                            rating = st.select_slider(
+                                "Rating",
+                                key="rating",
+                                value=rating_options[2],
+                                options=rating_options,
+                                label_visibility="hidden",
+                            )
+                            review = st.text_area(
+                                "Review", key="review", max_chars=500, placeholder="Your review here..."
+                            )
+                            submit = st.form_submit_button("Submit")
+                    if submit:
+                        collection_reviews.insert_one(
+                            {
+                                "product_id": product_id,
+                                "nickname": server_state.get("username"),
+                                "review": review,
+                                "rating": len(rating),
+                                "date": time.strftime("%d %b, %Y"),
+                                "timestamp": datetime.now(),
+                            }
                         )
-                        review = st.text_area("Review", key="review", max_chars=500, placeholder="Your review here...")
-                        submit = st.form_submit_button("Submit")
-                if submit:
-                    collection_reviews.insert_one(
-                        {
-                            "product_id": product_id,
-                            "nickname": server_state.get("username"),
-                            "review": review,
-                            "rating": len(rating),
-                            "date": time.strftime("%d %b, %Y"),
-                            "timestamp": datetime.now(),
-                        }
-                    )
-                    st.rerun()
+                        st.rerun()
     st.divider()
     st.subheader("Product reviews", divider=False)
 
+    reviews = list(collection_reviews.find({"product_id": product_details["product_id"]}).sort({"timestamp": -1}))
     ROW_SIZE = 1
     batch_size = 5
     grid = st.columns(ROW_SIZE)

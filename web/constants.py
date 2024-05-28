@@ -6,7 +6,7 @@ DATABASE_NAME = "shein"
 COLLECTION_URLS = "product_urls"
 COLLECTION_DETAILS = "product_details"
 COLLECTION_REVIEWS = "product_reviews"
-ROW_SIZE = 4
+ROW_SIZE = 5
 
 FOOTER = """
 <style>

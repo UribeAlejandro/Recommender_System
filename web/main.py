@@ -22,19 +22,25 @@ st.markdown(
 )
 if not server_state.get("authentication_status", False):
     with st.container(border=True):
-        st.write("Please log in to continue (username `test`, password `test`).")
+        st.write("Please log in to continue (username `test` should work.")
         st.info("You can also continue as a guest.")
         username = st.text_input("👤 :blue[**Username**]", help="Type your username")
-        password = st.text_input("🔑 :red[**Password**]", type="password", help="Type your password")
+        password = st.text_input(
+            "🔑 :red[**Password**]",
+            type="password",
+            help="Type your password",
+            placeholder="Passwords are not stored, so feel free to type anything!",
+        )
         cols = st.columns(4)
         with cols[0]:
-            login = st.button("Log in", type="primary", key="login", disabled=username == "" or password == "")
+            login = st.button("Log in", type="primary", key="login", disabled=username == "")
         with cols[1]:
-            guest = st.button(
-                "Continue as guest", type="secondary", key="guest", disabled=username != "" or password != ""
-            )
+            register = st.button("Register", type="secondary", key="register", disabled=username == "guest")
+        with cols[3]:
+            guest = st.button("Continue as guest", type="primary", key="guest", disabled=username != "")
+
         if login:
-            if username == "test" and password == "test":
+            if username != "guest":
                 with st.spinner("Checking credentials..."):
                     with no_rerun:
                         server_state.authentication_status = True
