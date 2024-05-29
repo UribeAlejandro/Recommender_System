@@ -1,4 +1,5 @@
 import base64
+import random
 from math import ceil
 
 import streamlit as st
@@ -49,14 +50,29 @@ with st.spinner("Loading the product list..."):
     expander = st.expander(label="Search and Filter", expanded=False)
 
     with expander:
-        controls = st.columns(3, gap="small")
+        controls = st.columns([4, 2, 2, 1], gap="small")
         with controls[0]:
-            search = st.text_input("Product name", key="search")
+            search = st.text_input("Product name", key="search", placeholder="Search for a product...")
         with controls[1]:
+            sort = st.selectbox(
+                "Sort by:", ["Relevance", "A-Z", "Z-A", "Price: Low to High", "Price: High to Low"], key="sort"
+            )
+            if sort == "A-Z":
+                products = sorted(products, key=lambda x: x["title"])
+            elif sort == "Z-A":
+                products = sorted(products, key=lambda x: x["title"], reverse=True)
+            elif sort == "Relevance":
+                products = sorted(products, key=lambda x: x["_id"])
+            elif sort == "Price: Low to High":
+                products = sorted(products, key=lambda x: x["_id"], reverse=True)
+            elif sort == "Price: High to Low":
+                products = sorted(products, key=lambda x: x["_id"], reverse=False)
+
+        with controls[2]:
             app_pet = st.multiselect(
                 "Applicable Pet", options=all_applicable_pets, default=applicable_pets, key="app_pet"
             )
-        with controls[2]:
+        with controls[3]:
             batch_size = st.selectbox(
                 "Images per page:",
                 range(20, 100, 20),
@@ -85,7 +101,7 @@ with st.spinner("Loading the product list..."):
                 encoded = base64.b64encode(data)
             data = "data:image/png;base64," + encoded.decode("utf-8")
 
-            with st.container(height=400):
+            with st.container(height=450):
                 product_card = card(
                     title="",
                     text="",
@@ -95,15 +111,27 @@ with st.spinner("Loading the product list..."):
                         "card": {
                             "width": "100%",
                             "height": "180px",
-                            "margin": "5%",
-                            "box-shadow": "0 0 15px rgba(0,0,0,0.5)",
-                            "display": "flex",
+                            "margin": "0%",
+                            "box-shadow": "0 0 5px rgba(0,0,0,0.5)",
+                            "display": "inline-flex",
                             "justify-content": "center",
                         },
-                        "text": {"position": "absolute", "bottom": -100, "left": 0, "color": "black"},
+                        "text": {"position": "absolute", "bottom": 0, "left": 15, "color": "red"},
                         "filter": {"background-color": "rgba(0, 0, 0, 0)"},
                     },
                 )
+
+                cols = st.columns([2, 4, 1])
+                with cols[1]:
+                    off = int(random.uniform(0.5, 1) * 100)
+                    st.metric(
+                        label="price",
+                        value="",
+                        delta=f"{str(-off)}% OFF",
+                        delta_color="normal",
+                        label_visibility="hidden",
+                    )
+                    st.markdown("*💸:green[2.5USD]💸*")
                 st.write(title)
                 if product_card:
                     with no_rerun:

@@ -23,7 +23,7 @@
 
 ### Author
 
-[Alejandro Uribe](https://github.com/UribeAlejandro) Chemical Engineer from [`Universidad Nacional de Colombia`](https://unal.edu.co/), Specialist in Artificial Intelligence from [`Universidad Nacional de Colombia`](https://unal.edu.co/) and student of the [`Master in Data Mining & Knowledge Discovery`](https://datamining.dc.uba.ar/) at [`Universidad de Buenos Aires`](https://www.uba.ar/).
+[Alejandro Uribe](https://uribealejandro.github.io/) Chemical Engineer from [`Universidad Nacional de Colombia`](https://unal.edu.co/), Specialist in Artificial Intelligence from [`Universidad Nacional de Colombia`](https://unal.edu.co/) and student of the [`Master in Data Mining & Knowledge Discovery`](https://datamining.dc.uba.ar/) at [`Universidad de Buenos Aires`](https://www.uba.ar/).
 
 ### Description
 
