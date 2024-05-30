@@ -44,9 +44,25 @@ def make_sidebar():
             server_state.authentication_status = False
     with st.sidebar:
         st.markdown(
-            "<h1><img "
-            'src="https://tung-local.myshopify.com/cdn/shop/products/Doge_1024x1024.png?v=1475122208" '
-            'style="height:50px;">Doge Market</h1>',
+            """
+            <style>
+                .block-container {
+                    padding-top: 1rem;
+                    padding-bottom: 0rem;
+                    margin-top: 1rem;
+                }
+                .reportview-container {
+                    margin-top: -2em;
+                }
+                #MainMenu {visibility: hidden;}
+                .stDeployButton {display:none;}
+                footer {visibility: hidden;}
+                #stDecoration {display:none;}
+            </style>
+            <h1><img
+            src="https://tung-local.myshopify.com/cdn/shop/products/Doge_1024x1024.png?v=1475122208"
+            style="height:50px;">Doge Market</h1>
+            """,
             unsafe_allow_html=True,
         )
         st.markdown("<h1>Navigation 🚀</h1>", unsafe_allow_html=True)

@@ -1,0 +1,6 @@
+FROM python:3.12-slim
+
+COPY requirements-scrapper.txt requirements.txt
+COPY shein shein
+
+RUN pip install -r requirements.txt
