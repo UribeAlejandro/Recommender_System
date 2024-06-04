@@ -7,38 +7,38 @@ services:
     ports:
       - "27017:27017"
 
-#  standalone-selenium:
-#    image: seleniarm/standalone-firefox:latest
-#    ports:
-#      - "4444:4444"
+  standalone-selenium:
+    image: seleniarm/standalone-firefox:latest
+    ports:
+      - "4444:4444"
 
-#  scrapper:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile-scrapper
-#    image: scrapper
-#    container_name: scrapper
-#    restart: unless-stopped
-#    command: python -m scrapper.main
-#    depends_on:
-#      - database
-#      - standalone-selenium
-#    environment:
-#      - MONGO_HOST=database
-#      - SELENIUM_HOST=standalone-selenium
+  scrapper:
+    build:
+      context: .
+      dockerfile: Dockerfile-scrapper
+    image: scrapper
+    container_name: scrapper
+    restart: unless-stopped
+    command: python -m scrapper.main
+    depends_on:
+      - database
+      - standalone-selenium
+    environment:
+      - MONGO_HOST=database
+      - SELENIUM_HOST=standalone-selenium
 
-#  recommender:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile-recommender
-#    image: recommender
-#    container_name: recommender
-#    restart: unless-stopped
-#    command: python -m recommender.main
-#    depends_on:
-#      - database
-#    environment:
-#      - MONGO_HOST=database
+  recommender:
+    build:
+      context: .
+      dockerfile: Dockerfile-recommender
+    image: recommender
+    container_name: recommender
+    restart: unless-stopped
+    command: python -m recommender.main
+    depends_on:
+      - database
+    environment:
+      - MONGO_HOST=database
 
   web:
     build:
