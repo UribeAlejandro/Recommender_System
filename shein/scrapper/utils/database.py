@@ -5,7 +5,7 @@ from pymongo import MongoClient
 from pymongo.database import Database
 from pymongo.errors import CollectionInvalid
 
-from shein.constants import DATABASE_URL
+from shein.constants import COLLECTION_DETAILS, DATABASE_URL
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -81,3 +81,41 @@ def write_url_in_database(
         collection.insert_one(
             {"url": cleaned_url, "parent_url": parent_url, "status": "pending", "timestamp": datetime.now()}
         )
+
+
+def clean_price_column(mongo_database: Database):
+    """
+    Clean the columns in the MongoDB database.
+
+    Parameters
+    ----------
+    mongo_database : Database
+        The MongoDB database
+    """
+    collection_details = mongo_database[COLLECTION_DETAILS]
+    pipeline = [
+        {"$addFields": {"price_clean": {"$replaceAll": {"input": "$price", "find": "From", "replacement": ""}}}},
+        {
+            "$set": {
+                "price_clean": {"$replaceAll": {"input": "$price_clean", "find": {"$literal": "$"}, "replacement": ""}}
+            }
+        },
+        {
+            "$set": {
+                "price_clean": {
+                    "$trim": {
+                        "input": "$price_clean",
+                    }
+                }
+            }
+        },
+        {"$set": {"price_clean": {"$split": ["$price_clean", "\n"]}}},
+        {
+            "$addFields": {
+                "price_discount": {"$arrayElemAt": ["$price_clean", 0]},
+                "price_real": {"$arrayElemAt": ["$price_clean", 1]},
+                "off_percent": {"$arrayElemAt": ["$price_clean", 2]},
+            }
+        },
+    ]
+    collection_details.update_many({}, pipeline)

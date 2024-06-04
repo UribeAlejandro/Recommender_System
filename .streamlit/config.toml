@@ -1,0 +1,13 @@
+[theme]
+base="light"
+
+[client]
+showSidebarNavigation = false
+showErrorDetails = true
+
+[server]
+port = 8501
+headless=true
+
+[logger]
+level = "debug"

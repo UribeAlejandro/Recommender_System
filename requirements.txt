@@ -1,5 +1,0 @@
-streamlit
-selenium
-streamlit-authenticator
-streamlit-modal
-streamlit-navigation-bar

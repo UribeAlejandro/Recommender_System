@@ -1,0 +1,4 @@
+pymongo
+streamlit
+streamlit-card
+streamlit-server-state

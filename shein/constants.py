@@ -2,7 +2,7 @@ import os
 
 # Setup
 DOMAIN = "shein.com"  # For checking if the URL is from the same domain
-DEBUG = True  # Set to True to limit to 1 page
+DEBUG = False  # Set to True to limit to 1 page
 USE_DB = True  # True = MongoDB, False = JSON
 URLS = ["https://us.shein.com/Pet-Supplies-c-2400.html?sort=10"]
 

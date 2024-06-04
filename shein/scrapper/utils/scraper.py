@@ -43,6 +43,7 @@ def get_driver() -> webdriver.Chrome:
 
     driver = webdriver.Chrome()
     driver.delete_all_cookies()
+    driver.implicitly_wait(2)
     return driver
 
 
