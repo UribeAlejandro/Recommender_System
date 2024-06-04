@@ -6,4 +6,4 @@ COPY README.md README.md
 COPY requirements-web.txt requirements.txt
 COPY web web
 
-RUN pip install -r requirements.txt
+RUN pip install -r --no-cache-dir requirements.txt
