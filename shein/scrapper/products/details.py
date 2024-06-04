@@ -41,6 +41,7 @@ def get_details(driver: webdriver.Chrome, mongo_database: Database) -> None:
             text_image_url = element_image.find_element(By.TAG_NAME, "img").get_attribute("src")
             text_title = driver.find_element(By.CLASS_NAME, "product-intro__head-name").text
             text_product_id = driver.find_element(By.CLASS_NAME, "product-intro__head-sku").text.replace("SKU: ", "")
+            text_price = driver.find_element(By.CLASS_NAME, "ProductIntroHeadPrice").text
             element_description = driver.find_elements(By.CLASS_NAME, "product-intro__description-table-item")
 
             description = {
@@ -59,6 +60,7 @@ def get_details(driver: webdriver.Chrome, mongo_database: Database) -> None:
                 "last_update": datetime.now(),
                 "product_id": text_product_id,
                 "description_items": description,
+                "price": text_price,
             }
 
             product_details_collection.insert_one(product_data)

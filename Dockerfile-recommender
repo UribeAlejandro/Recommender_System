@@ -1,0 +1,6 @@
+FROM python:3.12-slim
+
+COPY requirements-recommender.txt requirements.txt
+COPY recommender recommender
+
+RUN pip install -r --no-cache-dir requirements.txt

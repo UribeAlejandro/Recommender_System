@@ -1,6 +1,6 @@
 env
 .dockerignore
-Dockerfile
+Dockerfile-web
 tests/
 .github/
 .dvc/
@@ -12,7 +12,7 @@ data.dvc
 docker-compose.yml
 Makefile
 pyproject.toml
-README.md
+#README.md
 requirements-dev.txt
 requirements-test.txt
 .dvcignore

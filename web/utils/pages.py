@@ -44,9 +44,25 @@ def make_sidebar():
             server_state.authentication_status = False
     with st.sidebar:
         st.markdown(
-            "<h1><img "
-            'src="https://tung-local.myshopify.com/cdn/shop/products/Doge_1024x1024.png?v=1475122208" '
-            'style="height:50px;">Doge Market</h1>',
+            """
+            <style>
+                .block-container {
+                    padding-top: 1rem;
+                    padding-bottom: 0rem;
+                    margin-top: 2rem;
+                }
+                .reportview-container {
+                    margin-top: -2em;
+                }
+                #MainMenu {visibility: hidden;}
+                .stDeployButton {display:none;}
+                footer {visibility: hidden;}
+                #stDecoration {display:none;}
+            </style>
+            <h1><img
+            src="https://tung-local.myshopify.com/cdn/shop/products/Doge_1024x1024.png?v=1475122208"
+            style="height:50px;">Doge Market</h1>
+            """,
             unsafe_allow_html=True,
         )
         st.markdown("<h1>Navigation 🚀</h1>", unsafe_allow_html=True)
@@ -66,16 +82,16 @@ def make_sidebar():
             )
             st.page_link(
                 icon="🔥",
-                page="main.py",
+                page="pages/Hot_Products.py",
                 label="Hot Products",
                 disabled=not server_state.get("authentication_status", True),
             )
-            st.markdown("<h3>Orders 📦</h3>", unsafe_allow_html=True)
-            st.page_link(icon="📦", page="main.py", label="Order History", disabled=True)
             st.markdown("<h3>Reviews 📝</h3>", unsafe_allow_html=True)
             st.page_link(icon="📝", page="pages/Reviews.py", label="Reviews", disabled=False)
             st.markdown("<h3>Account 👤</h3>", unsafe_allow_html=True)
             st.page_link(icon="👤", page="main.py", label="Account Management", disabled=True)
+            st.markdown("<h3>Stats 📊</h3>", unsafe_allow_html=True)
+            st.page_link(icon="📊", page="pages/Stats.py", label="Stats", disabled=False)
 
             if server_state.get("username", "guest") != "guest":
                 if st.button("Log out", type="primary"):
