@@ -1,5 +1,4 @@
 import base64
-import random
 from math import ceil
 
 import streamlit as st
@@ -38,7 +37,15 @@ with st.spinner("Loading the product list..."):
         }
         products = collection.find(
             filter_dict,
-            {"description_items.applicable pet": 1, "image_path": 1, "title": 1, "product_id": 1, "_id": 1},
+            {
+                "_id": 1,
+                "title": 1,
+                "image_path": 1,
+                "product_id": 1,
+                "price_discount": 1,
+                "off_percent": 1,
+                "description_items.applicable pet": 1,
+            },
         )
         products = list(products)
         applicable_pets = set(list(prod["description_items"]["applicable pet"] for prod in products))
@@ -54,19 +61,15 @@ with st.spinner("Loading the product list..."):
         with controls[0]:
             search = st.text_input("Product name", key="search", placeholder="Search for a product...")
         with controls[1]:
-            sort = st.selectbox(
-                "Sort by:", ["Relevance", "A-Z", "Z-A", "Price: Low to High", "Price: High to Low"], key="sort"
-            )
+            sort = st.selectbox("Sort by:", ["A-Z", "Z-A", "Price: Low to High", "Price: High to Low"], key="sort")
             if sort == "A-Z":
                 products = sorted(products, key=lambda x: x["title"])
             elif sort == "Z-A":
                 products = sorted(products, key=lambda x: x["title"], reverse=True)
-            elif sort == "Relevance":
-                products = sorted(products, key=lambda x: x["_id"])
             elif sort == "Price: Low to High":
-                products = sorted(products, key=lambda x: x["_id"], reverse=True)
+                products = sorted(products, key=lambda x: x["price_discount"], reverse=False)
             elif sort == "Price: High to Low":
-                products = sorted(products, key=lambda x: x["_id"], reverse=False)
+                products = sorted(products, key=lambda x: x["price_discount"], reverse=True)
 
         with controls[2]:
             app_pet = st.multiselect(
@@ -84,6 +87,7 @@ with st.spinner("Loading the product list..."):
         st.error("No products found.")
         st.stop()
 
+    st.success(f"We have {len(products)} for your pet! 🐶🐱🐹🐰🐦🐢🐍🐠🦎🐾🦜🐴🐷🐄🐑🐓🦃🦢🦆🦉🦚🦜🦇🦋🐝🐞🦗🕷🦟🦠")
     grid = st.columns(ROW_SIZE)
     page = st.session_state.get("page", 1)
     num_batches = ceil(len(products) / batch_size)
@@ -95,16 +99,20 @@ with st.spinner("Loading the product list..."):
             _id = product["_id"]
             title = product["title"]
             img_route = product["image_path"]
+            price_discount = product["price_discount"]
+            price_real = product.get("price_real", price_discount)
+            off_percent = product.get("off_percent", "")
+            __off_percent = "" if off_percent == "" else f"{off_percent} off"
 
             with open(img_route, "rb") as f:
                 data = f.read()
                 encoded = base64.b64encode(data)
             data = "data:image/png;base64," + encoded.decode("utf-8")
 
-            with st.container(height=450):
+            with st.container(height=370):
                 product_card = card(
-                    title="",
-                    text="",
+                    title=f"{__off_percent}",
+                    text=f"${price_discount}",
                     image=data,
                     key=str(_id),
                     styles={
@@ -116,23 +124,13 @@ with st.spinner("Loading the product list..."):
                             "display": "inline-flex",
                             "justify-content": "center",
                         },
-                        "text": {"position": "absolute", "bottom": 0, "left": 15, "color": "red"},
+                        "text": {"position": "absolute", "bottom": 0, "left": 50, "color": "green"},
+                        "title": {"position": "absolute", "bottom": 120, "right": 15, "color": "red"},
                         "filter": {"background-color": "rgba(0, 0, 0, 0)"},
                     },
                 )
+                st.write(title[0:90])
 
-                cols = st.columns([2, 4, 1])
-                with cols[1]:
-                    off = int(random.uniform(0.5, 1) * 100)
-                    st.metric(
-                        label="price",
-                        value="",
-                        delta=f"{str(-off)}% OFF",
-                        delta_color="normal",
-                        label_visibility="hidden",
-                    )
-                    st.markdown("*💸:green[2.5USD]💸*")
-                st.write(title)
                 if product_card:
                     with no_rerun:
                         st.session_state["_id"] = _id

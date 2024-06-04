@@ -49,7 +49,7 @@ def make_sidebar():
                 .block-container {
                     padding-top: 1rem;
                     padding-bottom: 0rem;
-                    margin-top: 1rem;
+                    margin-top: 2rem;
                 }
                 .reportview-container {
                     margin-top: -2em;
@@ -82,16 +82,16 @@ def make_sidebar():
             )
             st.page_link(
                 icon="🔥",
-                page="main.py",
+                page="pages/Hot_Products.py",
                 label="Hot Products",
                 disabled=not server_state.get("authentication_status", True),
             )
-            st.markdown("<h3>Orders 📦</h3>", unsafe_allow_html=True)
-            st.page_link(icon="📦", page="main.py", label="Order History", disabled=True)
             st.markdown("<h3>Reviews 📝</h3>", unsafe_allow_html=True)
             st.page_link(icon="📝", page="pages/Reviews.py", label="Reviews", disabled=False)
             st.markdown("<h3>Account 👤</h3>", unsafe_allow_html=True)
             st.page_link(icon="👤", page="main.py", label="Account Management", disabled=True)
+            st.markdown("<h3>Stats 📊</h3>", unsafe_allow_html=True)
+            st.page_link(icon="📊", page="pages/Stats.py", label="Stats", disabled=False)
 
             if server_state.get("username", "guest") != "guest":
                 if st.button("Log out", type="primary"):

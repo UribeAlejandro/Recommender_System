@@ -27,7 +27,9 @@ else:
     make_sidebar()
     hide_image_fullscreen()
 
-back = st.button("Back to products", key="back", type="secondary")
+back = st.button("Back to products", key="back", type="primary")
+if back:
+    st.switch_page("pages/Products.py")
 
 with st.spinner("Loading the product details..."):
     db = get_mongo_database(DATABASE_NAME)
@@ -39,9 +41,14 @@ with st.spinner("Loading the product details..."):
     title = product_details["title"]
     img_route = product_details["image_path"]
     product_id = product_details["product_id"]
+    price_discount = product_details.get("price_discount")
+    price_real = product_details.get("price_real", price_discount)
+    off_percent = product_details.get("off_percent", "0%")
 
     already_reviewed = collection_reviews.find_one({"product_id": product_id, "nickname": server_state.get("username")})
-    mean_rating = collection_reviews.aggregate([{"$group": {"_id": _id, "mean": {"$avg": "$rating"}}}])
+    mean_rating = collection_reviews.aggregate(
+        [{"$match": {"product_id": product_id}}, {"$group": {"_id": _id, "mean": {"$avg": "$rating"}}}]
+    )
     mean_rating = next(mean_rating, {"mean": 0})
 
     st.subheader(title, divider=True)
@@ -50,7 +57,6 @@ with st.spinner("Loading the product details..."):
     with cols[0]:
         image = Image.open(img_route)
         st.image(image, use_column_width="always")
-        st.markdown(f"<h4>Mean rating: {mean_rating['mean']:.2f} ⭐</h4>", unsafe_allow_html=True)
         st.caption("Other products are not included in the purchase.")
 
     with cols[2]:
@@ -59,17 +65,19 @@ with st.spinner("Loading the product details..."):
         with st.container():
             with st.expander(":blue[**Description**]", expanded=True):
                 col1, col2 = st.columns(2)
+                with col1:
+                    st.write("**Discount**")
+                    st.write("**Price**")
+                    st.write("**Product ID**")
+                with col2:
+                    st.markdown(f"**:red[{off_percent}]**")
+                    st.markdown(f"**:green[${price_discount}]** ~~${price_real}~~")
+                    st.write(f"*{product_id}*")
                 for k, v in product_description.items():
                     with col1:
                         st.write(f"**{str(k).capitalize()}**")
                     with col2:
                         st.write(f"{str(v).capitalize()}")
-                with col1:
-                    st.write("**Price**")
-                    st.write("**Product ID**")
-                with col2:
-                    st.write(f"*{product_details.get('price', 1.25)}*")
-                    st.write(f"*{product_id}*")
             st.divider()
             st.markdown("<h4>Review this product!</h4>", unsafe_allow_html=True)
             if server_state.get("username") == "guest":
@@ -106,20 +114,21 @@ with st.spinner("Loading the product details..."):
                                 "Review", key="review", max_chars=500, placeholder="Your review here..."
                             )
                             submit = st.form_submit_button("Submit")
-                    if submit:
-                        collection_reviews.insert_one(
-                            {
-                                "product_id": product_id,
-                                "nickname": server_state.get("username"),
-                                "review": review,
-                                "rating": len(rating),
-                                "date": time.strftime("%d %b, %Y"),
-                                "timestamp": datetime.now(),
-                            }
-                        )
-                        st.rerun()
+                            if submit:
+                                collection_reviews.insert_one(
+                                    {
+                                        "product_id": product_id,
+                                        "nickname": server_state.get("username"),
+                                        "review": review,
+                                        "rating": len(rating),
+                                        "date": time.strftime("%d %b, %Y"),
+                                        "timestamp": datetime.now(),
+                                    }
+                                )
+                                st.rerun()
     st.divider()
     st.subheader("Product reviews", divider=False)
+    st.markdown(f"<h4>Mean rating: {mean_rating['mean']:.2f} ⭐</h4>", unsafe_allow_html=True)
 
     reviews = list(collection_reviews.find({"product_id": product_details["product_id"]}).sort({"timestamp": -1}))
     ROW_SIZE = 1
@@ -150,9 +159,6 @@ with st.spinner("Loading the product details..."):
         page_select = st.selectbox(
             "Page Number", range(1, num_batches + 1), key="page_reviews", disabled=num_batches == 1
         )
-
-if back:
-    st.switch_page("pages/Products.py")
 
 st.divider()
 st.markdown(FOOTER, unsafe_allow_html=True)
