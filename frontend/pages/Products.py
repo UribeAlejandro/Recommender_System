@@ -6,9 +6,9 @@ from pymongo.errors import ServerSelectionTimeoutError
 from streamlit_card import card
 from streamlit_server_state import no_rerun
 
-from web.constants import COLLECTION_DETAILS, DATABASE_NAME, FOOTER, ROW_SIZE
-from web.utils.database import get_mongo_database
-from web.utils.pages import hide_image_fullscreen, make_sidebar
+from frontend.constants import COLLECTION_DETAILS, DATABASE_NAME, FOOTER, ROW_SIZE
+from frontend.utils.database import get_mongo_database
+from frontend.utils.pages import hide_image_fullscreen, make_sidebar
 
 st.set_page_config(
     layout="wide",

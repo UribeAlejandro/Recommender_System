@@ -2,7 +2,7 @@ import streamlit as st
 from pymongo import MongoClient
 from pymongo.database import Database
 
-from web.constants import DATABASE_URL
+from frontend.constants import DATABASE_URL
 
 
 @st.cache_resource

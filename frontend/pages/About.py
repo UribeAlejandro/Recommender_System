@@ -1,7 +1,7 @@
 import streamlit as st
 
-from web.constants import FOOTER
-from web.utils.pages import make_sidebar
+from frontend.constants import FOOTER
+from frontend.utils.pages import make_sidebar
 
 st.set_page_config(
     layout="centered",

@@ -6,9 +6,9 @@ import streamlit as st
 from PIL import Image
 from streamlit_server_state import server_state
 
-from web.constants import COLLECTION_DETAILS, COLLECTION_REVIEWS, DATABASE_NAME, FOOTER
-from web.utils.database import get_mongo_database
-from web.utils.pages import hide_image_fullscreen, make_sidebar
+from frontend.constants import COLLECTION_DETAILS, COLLECTION_REVIEWS, DATABASE_NAME, FOOTER
+from frontend.utils.database import get_mongo_database
+from frontend.utils.pages import hide_image_fullscreen, make_sidebar
 
 _id = st.session_state.get("_id", None)
 
