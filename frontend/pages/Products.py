@@ -2,12 +2,11 @@ import base64
 from math import ceil
 
 import streamlit as st
-from pymongo.errors import ServerSelectionTimeoutError
 from streamlit_card import card
 from streamlit_server_state import no_rerun
 
-from frontend.constants import COLLECTION_DETAILS, DATABASE_NAME, FOOTER, ROW_SIZE
-from frontend.utils.database import get_mongo_database
+from frontend.constants import FOOTER, ROW_SIZE
+from frontend.utils.database import get_all_applicable_pets, get_products
 from frontend.utils.pages import hide_image_fullscreen, make_sidebar
 
 st.set_page_config(
@@ -23,36 +22,10 @@ hide_image_fullscreen()
 st.header("🎁 Product List")
 st.subheader("Your one-stop shop for all things!", divider=True)
 with st.spinner("Loading the product list..."):
-    try:
-        db = get_mongo_database(DATABASE_NAME)
-        collection = db.get_collection(COLLECTION_DETAILS)
-        all_applicable_pets = collection.distinct("description_items.applicable pet")
-        filter_dict = {
-            "$and": [
-                {"image_path": {"$exists": True}},
-                {"image_path": {"$ne": "pending"}},
-                {"title": {"$regex": st.session_state.get("search", ""), "$options": "i"}},
-                {"description_items.applicable pet": {"$in": st.session_state.get("app_pet", all_applicable_pets)}},
-            ]
-        }
-        products = collection.find(
-            filter_dict,
-            {
-                "_id": 1,
-                "title": 1,
-                "image_path": 1,
-                "product_id": 1,
-                "price_discount": 1,
-                "off_percent": 1,
-                "description_items.applicable pet": 1,
-            },
-        )
-        products = list(products)
-        applicable_pets = set(list(prod["description_items"]["applicable pet"] for prod in products))
-
-    except ServerSelectionTimeoutError:
-        st.error("Error connecting to the database. Please try again later.")
-        st.stop()
+    all_applicable_pets = get_all_applicable_pets()
+    search = st.session_state.get("search", "")
+    app_pet = st.session_state.get("app_pet", [])
+    products = get_products(search, app_pet)
 
     expander = st.expander(label="Search and Filter", expanded=False)
 
@@ -72,9 +45,7 @@ with st.spinner("Loading the product list..."):
                 products = sorted(products, key=lambda x: x["price_discount"], reverse=True)
 
         with controls[2]:
-            app_pet = st.multiselect(
-                "Applicable Pet", options=all_applicable_pets, default=applicable_pets, key="app_pet"
-            )
+            app_pet = st.multiselect("Applicable Pet", options=all_applicable_pets, key="app_pet")
         with controls[3]:
             batch_size = st.selectbox(
                 "Images per page:",
@@ -96,7 +67,7 @@ with st.spinner("Loading the product list..."):
     col = 0
     for product in batch:
         with grid[col]:
-            _id = product["_id"]
+            _id = product["id"]
             title = product["title"]
             img_route = product["image_path"]
             price_discount = product["price_discount"]

@@ -1,13 +1,12 @@
 import time
-from datetime import datetime
 from math import ceil
 
 import streamlit as st
 from PIL import Image
 from streamlit_server_state import server_state
 
-from frontend.constants import COLLECTION_DETAILS, COLLECTION_REVIEWS, DATABASE_NAME, FOOTER
-from frontend.utils.database import get_mongo_database
+from frontend.constants import FOOTER
+from frontend.utils.database import get_product, get_reviews, post_review
 from frontend.utils.pages import hide_image_fullscreen, make_sidebar
 
 _id = st.session_state.get("_id", None)
@@ -32,11 +31,7 @@ if back:
     st.switch_page("pages/Products.py")
 
 with st.spinner("Loading the product details..."):
-    db = get_mongo_database(DATABASE_NAME)
-    collection_reviews = db.get_collection(COLLECTION_REVIEWS)
-    collection_products = db.get_collection(COLLECTION_DETAILS)
-
-    product_details = collection_products.find_one({"_id": _id})
+    product_details = get_product(_id)
 
     title = product_details["title"]
     img_route = product_details["image_path"]
@@ -45,11 +40,11 @@ with st.spinner("Loading the product details..."):
     price_real = product_details.get("price_real", price_discount)
     off_percent = product_details.get("off_percent", "0%")
 
-    already_reviewed = collection_reviews.find_one({"product_id": product_id, "nickname": server_state.get("username")})
-    mean_rating = collection_reviews.aggregate(
-        [{"$match": {"product_id": product_id}}, {"$group": {"_id": _id, "mean": {"$avg": "$rating"}}}]
-    )
-    mean_rating = next(mean_rating, {"mean": 0})
+    user_name = server_state.get("username")
+    reviews = get_reviews(_id, product_id, user_name)
+
+    already_reviewed = reviews.get("already_reviewed", {})
+    mean_rating = reviews.get("mean_rating", 0.0)
 
     st.subheader(title, divider=True)
     cols = st.columns([2, 1, 3], gap="small")
@@ -115,22 +110,18 @@ with st.spinner("Loading the product details..."):
                             )
                             submit = st.form_submit_button("Submit")
                             if submit:
-                                collection_reviews.insert_one(
-                                    {
-                                        "product_id": product_id,
-                                        "nickname": server_state.get("username"),
-                                        "review": review,
-                                        "rating": len(rating),
-                                        "date": time.strftime("%d %b, %Y"),
-                                        "timestamp": datetime.now(),
-                                    }
-                                )
+                                nickname = server_state.get("username")
+                                response = post_review(product_id, nickname, review, rating)
+                                if response.status_code == 201:
+                                    st.success("Review submitted successfully!")
+                                else:
+                                    st.error("Failed to submit review. Please try again.")
                                 st.rerun()
     st.divider()
     st.subheader("Product reviews", divider=False)
-    st.markdown(f"<h4>Mean rating: {mean_rating['mean']:.2f} ⭐</h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4>Mean rating: {mean_rating['mean']:.1f} ⭐</h4>", unsafe_allow_html=True)
 
-    reviews = list(collection_reviews.find({"product_id": product_details["product_id"]}).sort({"timestamp": -1}))
+    reviews = reviews.get("reviews", [])
     ROW_SIZE = 1
     batch_size = 5
     grid = st.columns(ROW_SIZE)

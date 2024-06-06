@@ -2,7 +2,7 @@ import logging
 
 from fastapi import FastAPI
 
-from backend.routes import ping
+from backend.routes import filters, ping, products, reviews
 
 log = logging.getLogger("uvicorn")
 
@@ -18,6 +18,9 @@ def create_application() -> FastAPI:
     """
     application = FastAPI()
     application.include_router(ping.router)
+    application.include_router(filters.router)
+    application.include_router(products.router)
+    application.include_router(reviews.router)
 
     return application
 

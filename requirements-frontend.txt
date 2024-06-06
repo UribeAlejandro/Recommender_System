@@ -1,4 +1,5 @@
 pymongo
+requests
 streamlit
 streamlit-card
 streamlit-server-state
