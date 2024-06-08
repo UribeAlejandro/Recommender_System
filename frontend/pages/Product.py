@@ -36,9 +36,14 @@ with st.spinner("Loading the product details..."):
     title = product_details["title"]
     img_route = product_details["image_path"]
     product_id = product_details["product_id"]
+
     price_discount = product_details.get("price_discount")
-    price_real = product_details.get("price_real", price_discount)
-    off_percent = product_details.get("off_percent", "0%")
+    price_real = product_details.get("price_real")
+    off_percent = product_details.get("off_percent", 0)
+
+    price_discount = f"${price_discount:.2f}" if price_discount else "N/A"
+    price_real = f"~~${price_real:.2f}~~" if price_real else ""
+    off_percent = f"{off_percent}%" if off_percent else "N/A"
 
     user_name = server_state.get("username")
     reviews = get_reviews(_id, product_id, user_name)
@@ -66,7 +71,7 @@ with st.spinner("Loading the product details..."):
                     st.write("**Product ID**")
                 with col2:
                     st.markdown(f"**:red[{off_percent}]**")
-                    st.markdown(f"**:green[${price_discount}]** ~~${price_real}~~")
+                    st.markdown(f"**:green[{price_discount}]** {price_real}")
                     st.write(f"*{product_id}*")
                 for k, v in product_description.items():
                     with col1:

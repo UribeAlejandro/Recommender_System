@@ -25,33 +25,65 @@ with st.spinner("Loading the product list..."):
     all_applicable_pets = get_all_applicable_pets()
     search = st.session_state.get("search", "")
     app_pet = st.session_state.get("app_pet", [])
+    page = st.session_state.get("page", 1)
+    sort = st.session_state.get("sort", "Relevance")
+    sort_options = [
+        "Relevance",
+        "Price: Low to High",
+        "Price: High to Low",
+        "Discount: High to Low",
+        "Discount: Low to High",
+        "Alphabetical: A-Z",
+        "Alphabetical: Z-A",
+    ]
+    sort_index = sort_options.index(sort)
     products = get_products(search, app_pet)
 
-    expander = st.expander(label="Search and Filter", expanded=False)
+    expander = st.expander(label="Search and Filter", expanded=True)
 
     with expander:
-        controls = st.columns([4, 2, 2, 1], gap="small")
+        controls = st.columns([3, 2, 2, 2, 2], gap="small")
+
         with controls[0]:
-            search = st.text_input("Product name", key="search", placeholder="Search for a product...")
+            st.markdown("**Product name**")
+            search = st.text_input(
+                "Product name", key="search", placeholder="Search for a product...", label_visibility="collapsed"
+            )
         with controls[1]:
-            sort = st.selectbox("Sort by:", ["A-Z", "Z-A", "Price: Low to High", "Price: High to Low"], key="sort")
-            if sort == "A-Z":
+            st.markdown("**Sort by**")
+            sort = st.selectbox("Sort by:", sort_options, index=sort_index, key="sort", label_visibility="collapsed")
+            if sort == "Alphabetical: A-Z":
                 products = sorted(products, key=lambda x: x["title"])
-            elif sort == "Z-A":
+            elif sort == "Alphabetical: Z-A":
                 products = sorted(products, key=lambda x: x["title"], reverse=True)
             elif sort == "Price: Low to High":
                 products = sorted(products, key=lambda x: x["price_discount"], reverse=False)
             elif sort == "Price: High to Low":
                 products = sorted(products, key=lambda x: x["price_discount"], reverse=True)
-
+            elif sort == "Discount: High to Low":
+                products = sorted(products, key=lambda x: x["off_percent"] if x["off_percent"] else 0, reverse=False)
+            elif sort == "Discount: Low to High":
+                products = sorted(products, key=lambda x: x["off_percent"] if x["off_percent"] else 0, reverse=True)
+            elif sort == "Relevance":
+                products = sorted(products, key=lambda x: x["id"])
         with controls[2]:
-            app_pet = st.multiselect("Applicable Pet", options=all_applicable_pets, key="app_pet")
+            st.markdown("**Category**")
+            category = st.multiselect(
+                "Category", options=all_applicable_pets, key="category", label_visibility="collapsed"
+            )
         with controls[3]:
+            st.markdown("**Applicable Pet**")
+            app_pet = st.multiselect(
+                "Applicable Pet", options=all_applicable_pets, key="app_pet", label_visibility="collapsed"
+            )
+        with controls[4]:
+            st.markdown("**Images per page**")
             batch_size = st.selectbox(
-                "Images per page:",
+                "Images per page",
                 range(20, 100, 20),
                 disabled=len(products) < st.session_state.get("batch_size", 20),
                 key="batch_size",
+                label_visibility="collapsed",
             )
 
     if len(products) == 0:
@@ -60,7 +92,6 @@ with st.spinner("Loading the product list..."):
 
     st.success(f"We have {len(products)} for your pet! 🐶🐱🐹🐰🐦🐢🐍🐠🦎🐾🦜🐴🐷🐄🐑🐓🦃🦢🦆🦉🦚🦜🦇🦋🐝🐞🦗🕷🦟🦠")
     grid = st.columns(ROW_SIZE)
-    page = st.session_state.get("page", 1)
     num_batches = ceil(len(products) / batch_size)
     batch = products[(page - 1) * batch_size : page * batch_size]
 
@@ -71,9 +102,9 @@ with st.spinner("Loading the product list..."):
             title = product["title"]
             img_route = product["image_path"]
             price_discount = product["price_discount"]
-            price_real = product.get("price_real", price_discount)
-            off_percent = product.get("off_percent", "")
-            __off_percent = "" if off_percent == "" else f"{off_percent} off"
+            price_real = product.get("price_real")
+            off_percent = product.get("off_percent", 0)
+            __off_percent = f"{off_percent}% off" if off_percent else ""
 
             with open(img_route, "rb") as f:
                 data = f.read()

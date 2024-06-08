@@ -18,16 +18,12 @@ class ProductDetails(BaseModel):
         The product URL
     title : str
         The product title
-    price : str
-        The product price
     off_percent : str
         The product off percent
     price_real : str
         The product real price
     price_discount : str
         The product discount price
-    price_clean : list[str]
-        The product clean price
     image_url : str
         The product image URL
     product_id : str
@@ -40,20 +36,21 @@ class ProductDetails(BaseModel):
         The product description items
     """
 
-    id: PyObjectId | None = Field(alias="_id", default=None)
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    id: PyObjectId | None = Field(alias="_id")
     url: str | None = Field(default=None)
     title: str | None = Field(default=None)
 
-    price: str | None = Field(default=None)
-    off_percent: str | None = Field(default="0%")
-    price_real: str | None = Field(default="")
-    price_discount: str | None = Field(default="")
-    price_clean: list[str] | None = Field(default=None)
+    # price: Optional[str]
+    off_percent: int | None = Field(default=None)
+    price_real: float | None = Field(default=0)
+    price_discount: float = Field(default=0)
 
     image_url: str | None = Field(default=None)
     product_id: str | None = Field(default=None)
     image_path: str | None = Field(default=None)
-    last_update: str | None = Field(default=None)
+    last_update: str = Field(default=None)
     description_items: dict[str, str] | None = Field(default=None)
 
 
@@ -86,7 +83,7 @@ class ProductReview(BaseModel):
     product_id: str | None = Field(default=None)
     rating: int | None = Field(default=0)
     review: str | None = Field(default=None)
-    timestamp: datetime | None = Field(default=None)
+    timestamp: datetime = Field(default=None)
 
 
 class ProductURL(BaseModel):
