@@ -1,3 +1,5 @@
+import logging
+
 from bson import ObjectId
 from fastapi import APIRouter
 from fastapi.responses import ORJSONResponse
@@ -7,10 +9,11 @@ from backend.models.Collections import ProductDetails
 from backend.models.Response import ProductsResponse
 from backend.routes.utils import get_all_applicable_pets, get_mongo_database
 
-router = APIRouter()
+router = APIRouter(prefix="/products")
+logger = logging.getLogger("uvicorn")
 
 
-@router.get("/products", status_code=200, response_class=ORJSONResponse, response_model=ProductsResponse)
+@router.get("/", status_code=200, response_class=ORJSONResponse, response_model=ProductsResponse)
 async def get_products(search: str, applicable_pet: str):
     """
     Get products.
@@ -20,6 +23,7 @@ async def get_products(search: str, applicable_pet: str):
     dict
         The products
     """
+    logger.info("Getting products...")
     all_applicable_pets_list = get_all_applicable_pets()
 
     db = get_mongo_database(DATABASE_NAME)
@@ -52,8 +56,8 @@ async def get_products(search: str, applicable_pet: str):
     return ORJSONResponse(response.model_dump())
 
 
-@router.get("/product", status_code=200)
-async def get_product(mongo_id: str):
+@router.post("/details", status_code=200)
+async def get_product(product_filter: dict):
     """
     Get product.
 
@@ -64,9 +68,10 @@ async def get_product(mongo_id: str):
     """
     db = get_mongo_database(DATABASE_NAME)
     collection_products = db.get_collection(COLLECTION_DETAILS)
+    product_filter = {k: (ObjectId(v) if k == "_id" else v) for k, v in product_filter.items()}
 
     product_details = collection_products.find_one(
-        {"_id": ObjectId(mongo_id)},
+        product_filter,
         {
             "_id": 1,
             "title": 1,

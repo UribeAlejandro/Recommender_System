@@ -2,9 +2,9 @@ import logging
 
 from fastapi import FastAPI
 
-from backend.routes import filters, ping, products, reviews
+from backend.routes import filters, ping, products, reviews, user
 
-log = logging.getLogger("uvicorn")
+logger = logging.getLogger("uvicorn")
 
 
 def create_application() -> FastAPI:
@@ -18,9 +18,10 @@ def create_application() -> FastAPI:
     """
     application = FastAPI()
     application.include_router(ping.router)
+    application.include_router(user.router)
     application.include_router(filters.router)
-    application.include_router(products.router)
     application.include_router(reviews.router)
+    application.include_router(products.router)
 
     return application
 
@@ -31,10 +32,10 @@ app = create_application()
 @app.on_event("startup")
 async def startup_event():
     """Startup event."""
-    log.info("Starting up...")
+    logger.info("Starting up...")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Shutdown event."""
-    log.info("Shutting down...")
+    logger.info("Shutting down...")

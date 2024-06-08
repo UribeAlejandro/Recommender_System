@@ -5,11 +5,12 @@ import streamlit as st
 from PIL import Image
 from streamlit_server_state import server_state
 
-from frontend.constants import FOOTER
-from frontend.utils.database import get_product, get_reviews, post_review
-from frontend.utils.pages import hide_image_fullscreen, make_sidebar
+from frontend.constants import BATCH_SIZE_PRODUCT_REVIEWS, FOOTER, ROW_SIZE_PRODUCT_REVIEWS
+from frontend.pages.config import hide_image_fullscreen, make_sidebar
+from frontend.utils.backend import get_product, get_reviews, post_review
 
 _id = st.session_state.get("_id", None)
+page = st.session_state.get("page_reviews", 1)
 
 if not _id:
     st.error("Product not found. Please select a product from the list.")
@@ -31,7 +32,7 @@ if back:
     st.switch_page("pages/Products.py")
 
 with st.spinner("Loading the product details..."):
-    product_details = get_product(_id)
+    product_details = get_product({"_id": str(_id)})
 
     title = product_details["title"]
     img_route = product_details["image_path"]
@@ -127,12 +128,9 @@ with st.spinner("Loading the product details..."):
     st.markdown(f"<h4>Mean rating: {mean_rating['mean']:.1f} ⭐</h4>", unsafe_allow_html=True)
 
     reviews = reviews.get("reviews", [])
-    ROW_SIZE = 1
-    batch_size = 5
-    grid = st.columns(ROW_SIZE)
-    page = st.session_state.get("page_reviews", 1)
-    num_batches = ceil(len(reviews) / batch_size)
-    batch = reviews[(page - 1) * batch_size : page * batch_size]
+    grid = st.columns(ROW_SIZE_PRODUCT_REVIEWS)
+    num_batches = ceil(len(reviews) / BATCH_SIZE_PRODUCT_REVIEWS)
+    batch = reviews[(page - 1) * BATCH_SIZE_PRODUCT_REVIEWS : page * BATCH_SIZE_PRODUCT_REVIEWS]
 
     if len(reviews) > 0:
         col = 0
@@ -146,9 +144,9 @@ with st.spinner("Loading the product details..."):
                         st.write(s)
                     with rev_cols[1]:
                         st.write(f"*{review['review']}*")
-            col = (col + 1) % ROW_SIZE
+            col = (col + 1) % ROW_SIZE_PRODUCT_REVIEWS
     else:
-        st.write("No reviews yet. Be the first to review this product!")
+        st.info("No reviews yet. Be the first to review this product!")
 
     bottom = st.columns([10, 3, 10])
     with bottom[1]:

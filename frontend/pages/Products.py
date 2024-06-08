@@ -6,8 +6,8 @@ from streamlit_card import card
 from streamlit_server_state import no_rerun
 
 from frontend.constants import FOOTER, ROW_SIZE
-from frontend.utils.database import get_all_applicable_pets, get_products
-from frontend.utils.pages import hide_image_fullscreen, make_sidebar
+from frontend.pages.config import hide_image_fullscreen, make_sidebar
+from frontend.utils.backend import get_all_applicable_pets, get_products
 
 st.set_page_config(
     layout="wide",
@@ -19,14 +19,15 @@ st.set_page_config(
 make_sidebar()
 hide_image_fullscreen()
 
+search = st.session_state.get("search", "")
+app_pet = st.session_state.get("app_pet", [])
+page = st.session_state.get("page", 1)
+sort = st.session_state.get("sort", "Relevance")
+
 st.header("🎁 Product List")
 st.subheader("Your one-stop shop for all things!", divider=True)
 with st.spinner("Loading the product list..."):
     all_applicable_pets = get_all_applicable_pets()
-    search = st.session_state.get("search", "")
-    app_pet = st.session_state.get("app_pet", [])
-    page = st.session_state.get("page", 1)
-    sort = st.session_state.get("sort", "Relevance")
     sort_options = [
         "Relevance",
         "Price: Low to High",
@@ -81,9 +82,9 @@ with st.spinner("Loading the product list..."):
             batch_size = st.selectbox(
                 "Images per page",
                 range(20, 100, 20),
-                disabled=len(products) < st.session_state.get("batch_size", 20),
                 key="batch_size",
                 label_visibility="collapsed",
+                disabled=len(products) < st.session_state.get("batch_size", 20),
             )
 
     if len(products) == 0:

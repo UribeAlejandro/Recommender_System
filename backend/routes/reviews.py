@@ -10,10 +10,10 @@ from backend.models.Payload import ReviewPayload
 from backend.models.Response import ProductReviews
 from backend.routes.utils import get_mongo_database
 
-router = APIRouter()
+router = APIRouter(prefix="/reviews")
 
 
-@router.get("/reviews", status_code=200)
+@router.get("/", status_code=200)
 async def get_reviews(mongo_id: str, product_id: str, user_name: str):
     """
     Get reviews.
@@ -43,7 +43,7 @@ async def get_reviews(mongo_id: str, product_id: str, user_name: str):
     return {"already_reviewed": already_reviewed, "mean_rating": mean_rating, "reviews": reviews}
 
 
-@router.post("/reviews", status_code=201)
+@router.post("/", status_code=201)
 async def post_reviews(payload: ReviewPayload):
     """
     Post reviews.
@@ -65,4 +65,20 @@ async def post_reviews(payload: ReviewPayload):
             "timestamp": datetime.now(),
         }
     )
+    return {"status": "success"}
+
+
+@router.delete("/", status_code=200)
+async def delete_reviews(mongo_id: str, product_id: str, nickname: str):
+    """
+    Delete reviews.
+
+    Returns
+    -------
+    dict
+        The reviews
+    """
+    db = get_mongo_database(DATABASE_NAME)
+    collection_reviews = db.get_collection(COLLECTION_REVIEWS)
+    collection_reviews.delete_one({"_id": ObjectId(mongo_id), "nickname": nickname, "product_id": product_id})
     return {"status": "success"}
