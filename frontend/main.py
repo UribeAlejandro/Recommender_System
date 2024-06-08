@@ -3,8 +3,8 @@ from time import sleep
 import streamlit as st
 from streamlit_server_state import no_rerun, server_state
 
-from web.constants import FOOTER
-from web.utils.pages import make_sidebar
+from frontend.constants import FOOTER
+from frontend.pages.config import make_sidebar
 
 st.set_page_config(
     layout="centered",
@@ -35,7 +35,7 @@ if not server_state.get("authentication_status", False):
         with cols[0]:
             login = st.button("Log in", type="primary", key="login", disabled=username == "")
         with cols[1]:
-            register = st.button("Register", type="secondary", key="register", disabled=username == "guest")
+            register = st.button("Register", type="secondary", key="register", disabled=username != "")
         with cols[3]:
             guest = st.button("Continue as guest", type="primary", key="guest", disabled=username != "")
 

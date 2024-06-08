@@ -1,4 +1,6 @@
-pymongo
+watchdog
+requests
 streamlit
 streamlit-card
+streamlit-modal
 streamlit-server-state

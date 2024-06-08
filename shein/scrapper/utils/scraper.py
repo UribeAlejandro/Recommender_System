@@ -31,6 +31,7 @@ def get_driver() -> webdriver.Chrome:
     options.add_argument("--disable-extensions")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--ignore-certificate-errors")
+    options.page_load_strategy = "none"
     options.add_argument("--user-agent=" + get_user_agent())
 
     chromedriver_autoinstaller.install()

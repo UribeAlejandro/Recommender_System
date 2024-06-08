@@ -117,5 +117,19 @@ def clean_price_column(mongo_database: Database):
                 "off_percent": {"$arrayElemAt": ["$price_clean", 2]},
             }
         },
+        {
+            "$set": {
+                "off_percent": {"$replaceAll": {"input": "$off_percent", "find": {"$literal": "%"}, "replacement": ""}}
+            }
+        },
+        {"$unset": "price"},
+        {"$unset": "price_clean"},
+        {
+            "$set": {
+                "off_percent": {"$toInt": "$off_percent"},
+                "price_real": {"$toDouble": "$price_real"},
+                "price_discount": {"$toDouble": "$price_discount"},
+            }
+        },
     ]
     collection_details.update_many({}, pipeline)

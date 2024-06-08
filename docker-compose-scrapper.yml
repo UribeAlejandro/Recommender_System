@@ -1,0 +1,39 @@
+services:
+  database:
+    image: mongo:latest
+    restart: unless-stopped
+    volumes:
+      - ./database/mongo:/data/db
+    expose:
+      - 27017
+    networks:
+      - scraper-db
+
+  standalone-selenium:
+    image: seleniarm/standalone-firefox:latest
+    expose:
+      - 4444
+    networks:
+      - scraper-selenium
+
+  scrapper:
+    build:
+      context: .
+      dockerfile: Dockerfile-scrapper
+    image: scrapper
+    container_name: scrapper
+    restart: unless-stopped
+    command: python -m scrapper.main
+    depends_on:
+      - database
+      - standalone-selenium
+    environment:
+      - MONGO_HOST=database
+      - SELENIUM_HOST=standalone-selenium
+    networks:
+      - scraper-db
+      - scraper-selenium
+
+networks:
+  scraper-db:
+  scraper-selenium:
