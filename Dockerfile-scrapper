@@ -4,3 +4,5 @@ COPY requirements-scrapper.txt requirements.txt
 COPY shein shein
 
 RUN pip install --no-cache-dir -r requirements.txt
+
+#CMD python -m shein.main

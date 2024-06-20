@@ -74,15 +74,59 @@ The recommendations are based on the user's behavior on the website. The system 
 
 #### Content-Based Filtering
 
-## Tech stack
+## Development
 
-- Python
-- Streamlit
-- MongoDB
-- Docker
-- Google Cloud Platform
-- GitHub Actions
+### Data
+
+The data is scraped from the website [`Shein`](https://us.shein.com/), the data is stored in a `MongoDB` database. The data is stored in three collections:
+
+1. **Product URL**: Contains the URLs of the products. This is the initial data that is scraped, the data is then used to scrape the rest of the information. None of the services use this data.
+2. **Product Details**: Contains the information of the products.
+3. **Product Reviews**: Contains the reviews of the products.
+
+
+#### Extract
+
+To scrape the data, the following steps are followed:
+
+Start the containers using the following command:
+
+```bash
+docker-compose -f docker-compose-scrapper.yml up
+```
+
+The previous operation can be time-consuming, so try to run it once. Once the data is scraped, the containers can be stopped using the following command:
+
+```bash
+docker compose -f docker-compose-scrapper.yml down -v
+```
+
+#### Transform
+
+A pre-process is done to the data, after the extraction. The script [shein/main.py](shein/main.py) does so.
+
+Then, a second processing might be done. Open a `MongoDB` console and run the content of [database/scripts/etl.js](database/scripts/etl.js) to transform the data.
+
+#### Load
+
+This step is optional or if you want to go from local to a cloud database. To export the data run:
+
+```bash
+docker-compose exec -it database bin/bash
+```
+
+```bash
+mongodump --host localhost --port 27017 --db shein --gzip
+```
+
+Then, to import the data run:
+
+```bash
+mongorestore --uri mongodb+srv://<user>:<passowrd>@<x.x.mongodb.net> --gzip --nsInclude <collection-name>.* --nsTo=<collection-name>.*
+```
+
+More info [here](https://stackoverflow.com/questions/55785533/migrating-a-mongodb-on-a-local-machine-to-mongo-atlas).
 
 ### Continuous Integration and Continuous Deployment
 
-The project is deployed on `Google Cloud Platform` using `Docker` containers. The deployment is done using `GitHub Actions` and the `Docker` images are stored in the `Google Cloud Platform` container registry.
+The project is set up with `GitHub Actions` for `Continuous Integration` and `Continuous Deployment`. The `CI` pipeline runs the tests and the `CD` pipeline deploys the web application to `None`.

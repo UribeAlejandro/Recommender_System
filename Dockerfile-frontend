@@ -7,3 +7,5 @@ COPY requirements-frontend.txt requirements.txt
 COPY frontend frontend
 
 RUN pip install --no-cache-dir -r requirements.txt
+
+CMD streamlit run frontend/app.py

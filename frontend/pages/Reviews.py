@@ -3,12 +3,11 @@ from math import ceil
 
 import streamlit as st
 from streamlit_card import card
-from streamlit_modal import Modal
 from streamlit_server_state import no_rerun, server_state
 
 from frontend.constants import BATCH_SIZE_REVIEWS, FOOTER, ROW_SIZE_REVIEWS
-from frontend.pages.config import hide_image_fullscreen, make_sidebar
-from frontend.utils.backend import delete_review, get_product, get_user_reviews
+from frontend.utils.config import hide_image_fullscreen, make_sidebar
+from frontend.utils.controller import delete_review, get_product, get_user_reviews
 
 st.set_page_config(
     layout="centered",
@@ -82,28 +81,32 @@ else:
                     with rev_cols[2]:
                         delete = st.button("❌", key=f"delete{str(_id_review)}", help="Delete review")
 
-                    confirm_delete = Modal(
-                        "Are you sure you want to delete this review?", key="modal-delete-review", max_width=450
-                    )
                     if delete:
-                        confirm_delete.open()
-                    if confirm_delete.is_open():
-                        with confirm_delete.container():
-                            st.write("*This action cannot be undone.*")
-                            confirm_cols = st.columns(3)
-                            with confirm_cols[0]:
-                                cancel = st.button("Cancel", key=f"cancel-delete{str(_id_review)}")
-                            with confirm_cols[1]:
-                                delete = st.button("Delete", key=f"accept-delete{str(_id_review)}", type="primary")
-                            if cancel:
-                                confirm_delete.close()
-                            if delete:
-                                r = delete_review(_id_review, product_id, server_state.username)
-                                if r.status_code == 200:
-                                    st.success("Review deleted successfully.")
-                                    confirm_delete.close()
-                                else:
-                                    st.error("Failed to delete review.")
+                        r = delete_review(_id_review, product_id, server_state.username)
+                        st.rerun()
+
+                    # confirm_delete = Modal(
+                    #     "Are you sure you want to delete this review?", key="modal-delete-review", max_width=450
+                    # )
+                    # if delete:
+                    #     confirm_delete.open()
+                    # if confirm_delete.is_open():
+                    #     with confirm_delete.container():
+                    #         st.write("*This action cannot be undone.*")
+                    #         confirm_cols = st.columns(3)
+                    #         with confirm_cols[0]:
+                    #             cancel = st.button("Cancel", key=f"cancel-delete{str(_id_review)}")
+                    #         with confirm_cols[1]:
+                    #             delete_ = st.button("Delete", key=f"accept-delete{str(_id_review)}", type="primary")
+                    #         if cancel:
+                    #             confirm_delete.close()
+                    #         if delete_:
+                    #             r = delete_review(_id_review, product_id, server_state.username)
+                    #             if r.status_code == 200:
+                    #                 st.success("Review deleted successfully.")
+                    #                 confirm_delete.close()
+                    #             else:
+                    #                 st.error("Failed to delete review.")
 
             col = (col + 1) % ROW_SIZE_REVIEWS
     else:

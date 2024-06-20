@@ -4,7 +4,7 @@ import streamlit as st
 from streamlit_server_state import no_rerun, server_state
 
 from frontend.constants import FOOTER
-from frontend.pages.config import make_sidebar
+from frontend.utils.config import make_sidebar
 
 st.set_page_config(
     layout="centered",
@@ -45,13 +45,11 @@ if not server_state.get("authentication_status", False):
                     with no_rerun:
                         server_state.authentication_status = True
                         server_state.username = username
-                        sleep(1.5)
-                with st.spinner("Logged in successfully!"):
-                    sleep(1.5)
+                        sleep(1)
                 st.switch_page("pages/Products.py")
             else:
                 with st.spinner("Checking credentials..."):
-                    sleep(1.5)
+                    sleep(2)
                 st.error("Incorrect username or password")
 
     if guest:
@@ -59,11 +57,9 @@ if not server_state.get("authentication_status", False):
             with no_rerun:
                 server_state.authentication_status = True
                 server_state.username = "guest"
-            sleep(1.5)
         st.switch_page("pages/Products.py")
 else:
     with st.spinner("Redirecting to products page..."):
-        sleep(1.5)
-    st.switch_page("pages/Products.py")
+        st.switch_page("pages/Products.py")
 
 st.markdown(FOOTER, unsafe_allow_html=True)

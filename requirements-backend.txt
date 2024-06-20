@@ -1,3 +1,5 @@
 fastapi
 pymongo
 pydantic
+motor[srv]
+beanie
