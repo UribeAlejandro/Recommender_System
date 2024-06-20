@@ -133,3 +133,29 @@ def clean_price_column(mongo_database: Database):
         },
     ]
     collection_details.update_many({}, pipeline)
+
+
+def get_categories(mongo_database: Database):
+    """
+    Get the categories for the products.
+
+    Parameters
+    ----------
+    mongo_database: Database
+        The MongoDB database
+
+    Returns
+    -------
+    None
+    """
+    collection_details = mongo_database[COLLECTION_DETAILS]
+    pipeline = [
+        {
+            "$addFields": {
+                "main_category": {"$arrayElemAt": ["$categories", 0]},
+                "category": {"$arrayElemAt": ["$categories", 1]},
+                "subcategory": {"$arrayElemAt": ["$categories", 2]},
+            }
+        }
+    ]
+    collection_details.update_many({}, pipeline)

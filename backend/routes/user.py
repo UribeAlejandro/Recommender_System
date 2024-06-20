@@ -1,8 +1,8 @@
+from beanie.operators import Eq
 from fastapi import APIRouter
+from pymongo import DESCENDING
 
-from backend.constants import COLLECTION_REVIEWS, DATABASE_NAME
-from backend.models.Response import ProductReviews
-from backend.routes.utils import get_mongo_database
+from backend.models.Collections import ProductReview
 
 router = APIRouter(prefix="/user")
 
@@ -17,10 +17,10 @@ async def get_reviews(nickname: str):
     dict
         The reviews
     """
-    db = get_mongo_database(DATABASE_NAME)
-    collection_reviews = db.get_collection(COLLECTION_REVIEWS)
-
-    reviews = list(collection_reviews.find({"nickname": nickname}).sort({"timestamp": -1}))
-    reviews = ProductReviews(reviews=list(reviews)).reviews
+    reviews = (
+        await ProductReview.find(Eq(ProductReview.nickname, nickname))
+        .sort([(ProductReview.timestamp, DESCENDING)])
+        .to_list()
+    )
 
     return reviews

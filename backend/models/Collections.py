@@ -1,73 +1,98 @@
-import datetime
-from typing import Annotated
+import time
+from datetime import datetime
+from typing import Generic, TypeVar
 
-from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
+from beanie import Document
+from pydantic import Field
 
-PyObjectId = Annotated[str, BeforeValidator(str)]
+from backend.constants import COLLECTION_DETAILS, COLLECTION_REVIEWS
+
+T = TypeVar("T")
 
 
-class ProductDetails(BaseModel):
+class ProductDetails(Document):
     """
     Product details.
 
     Attributes
     ----------
-    id : PyObjectId
-        The product ID
     url : str
         The product URL
     title : str
         The product title
-    off_percent : str
-        The product off percent
-    price_real : str
-        The product real price
-    price_discount : str
-        The product discount price
-    image_url : str
-        The product image URL
-    product_id : str
-        The product ID
     image_path : str
         The product image path
-    last_update : str
+    image_url : str
+        The product image URL
+    last_update : datetime
         The product last update
-    description_items : dict[str, str]
+    product_id : str
+        The product ID
+    description_items : dict
         The product description items
+    price : str
+        The product price
+    price_real : float
+        The product real price
+    price_discount : float
+        The product discount price
+    off_percent : int
+        The product discount percent
+    categories : List[str]
+        The product categories
+    main_category : str
+        The product main category
+    category : str
+        The product category
+    subcategory : str
+        The product subcategory
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    url: str
+    title: str
+    image_path: str
+    image_url: str
+    last_update: datetime = Field(default_factory=datetime.now)
+    product_id: str
+    description_items: dict
+    price: str | None
+    price_real: float | None
+    price_discount: float | None
+    off_percent: int | None
 
-    id: PyObjectId | None = Field(alias="_id")
-    url: str | None = Field(default=None)
-    title: str | None = Field(default=None)
+    categories: list[str]
+    main_category: str
+    category: str
+    subcategory: str
 
-    # price: Optional[str]
-    off_percent: int | None = Field(default=None)
-    price_real: float | None = Field(default=0)
-    price_discount: float = Field(default=0)
+    class Settings:
+        """
+        Settings.
 
-    image_url: str | None = Field(default=None)
-    product_id: str | None = Field(default=None)
-    image_path: str | None = Field(default=None)
-    last_update: str = Field(default=None)
-    description_items: dict[str, str] | None = Field(default=None)
+        Attributes
+        ----------
+        name : str
+            The collection name
+        max_nesting_depths_per_field : dict
+            The max nesting depths per field
+        """
+
+        name = COLLECTION_DETAILS
+        max_nesting_depths_per_field = {"description_items": 1}
 
 
-class ProductReview(BaseModel):
+class ProductReview(Document):
     """
     Product review.
 
     Attributes
     ----------
-    id : PyObjectId
-        The MongoDB ID
+    product_id : str
+        The review product ID
     date : str
         The review date
     nickname : str
         The review nickname
-    product_id : str
-        The review product ID
     rating : int
         The review rating
     review : str
@@ -76,36 +101,83 @@ class ProductReview(BaseModel):
         The review timestamp
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-    id: PyObjectId | None = Field(alias="_id", default=None)
-    date: str | None = Field(default=None)
+    product_id: str
+    date: str | None = Field(default=time.strftime("%d %b, %Y"))
     nickname: str | None = Field(default=None)
-    product_id: str | None = Field(default=None)
     rating: int | None = Field(default=0)
     review: str | None = Field(default=None)
-    timestamp: datetime = Field(default=None)
+    timestamp: datetime = Field(default_factory=datetime.now().isoformat)
+
+    class Settings:
+        """
+        Settings.
+
+        Attributes
+        ----------
+        name : str
+            The collection name
+        """
+
+        name = COLLECTION_REVIEWS
 
 
-class ProductURL(BaseModel):
+class ProductsPaged(Generic[T]):
     """
-    Product URL.
+    Paged.
 
     Attributes
     ----------
-    id : PyObjectId
-        The MongoDB ID
-    parent_url : str
-        The parent URL
-    status : str
-        The URL status
-    timestamp : str
-        The URL timestamp
-    url : str
-        The URL
+    items : List[T]
+        The items list
+    size : int
+        The size of the items list
+    more_pages : bool
+        The more pages flag
+    applicable_pets : List[str]
+        The applicable pets list
+    categories : List[str]
+        The categories list
+    subcategories : List[str]
+        The subcategories list
     """
 
-    id: PyObjectId | None = Field(alias="_id", default=None)
-    parent_url: str | None = Field(default=None)
-    status: str | None = Field(default=None)
-    timestamp: str | None = Field(default=None)
-    url: str | None = Field(default=None)
+    items: list[T]
+    size: int
+    more_pages: bool
+    applicable_pets: list[str]
+    categories: list[str]
+    subcategories: list[str]
+
+    def __init__(
+        self,
+        number: int,
+        items: list[T],
+        more_pages: bool,
+        applicable_pets: list[str],
+        categories: list[str],
+        subcategories: list[str],
+    ):
+        """
+        Initialize the Paged.
+
+        Parameters
+        ----------
+        number: int
+            The number of products
+        items: List[T]
+            The products list
+        more_pages: bool
+            The more pages flag
+        applicable_pets: List[str]
+            The applicable pets list
+        categories: List[str]
+            The categories list
+        subcategories: List[str]
+            The subcategories list
+        """
+        self.items = items
+        self.number = number
+        self.more_pages = more_pages
+        self.applicable_pets = applicable_pets
+        self.categories = categories
+        self.subcategories = subcategories

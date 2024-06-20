@@ -1,38 +1,34 @@
 import logging
 
+from beanie import init_beanie
 from fastapi import FastAPI
+from motor.motor_asyncio import AsyncIOMotorClient
 
-from backend.routes import filters, ping, products, reviews, user
+from backend.constants import DATABASE_NAME, MONGO_URI
+from backend.models import __beanie_models__
+from backend.routes import ping, products, reviews, user
 
 logger = logging.getLogger("uvicorn")
 
-
-def create_application() -> FastAPI:
-    """
-    Create the FastAPI application.
-
-    Returns
-    -------
-    FastAPI
-        The FastAPI application
-    """
-    application = FastAPI()
-    application.include_router(ping.router)
-    application.include_router(user.router)
-    application.include_router(filters.router)
-    application.include_router(reviews.router)
-    application.include_router(products.router)
-
-    return application
-
-
-app = create_application()
+app = FastAPI()
 
 
 @app.on_event("startup")
 async def startup_event():
     """Startup event."""
     logger.info("Starting up...")
+
+    logger.info("Adding DB connection...")
+    client = AsyncIOMotorClient(MONGO_URI)
+
+    logger.info("Setting up Beanie...")
+    await init_beanie(database=client[DATABASE_NAME], document_models=__beanie_models__)
+
+    logger.info("Setting up routes...")
+    app.include_router(ping.router)
+    app.include_router(user.router)
+    app.include_router(reviews.router)
+    app.include_router(products.router, tags=["products"])
 
 
 @app.on_event("shutdown")

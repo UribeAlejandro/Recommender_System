@@ -6,8 +6,8 @@ from PIL import Image
 from streamlit_server_state import server_state
 
 from frontend.constants import BATCH_SIZE_PRODUCT_REVIEWS, FOOTER, ROW_SIZE_PRODUCT_REVIEWS
-from frontend.pages.config import hide_image_fullscreen, make_sidebar
-from frontend.utils.backend import get_product, get_reviews, post_review
+from frontend.utils.config import hide_image_fullscreen, make_sidebar
+from frontend.utils.controller import get_product, get_reviews, post_review
 
 _id = st.session_state.get("_id", None)
 page = st.session_state.get("page_reviews", 1)
@@ -47,7 +47,7 @@ with st.spinner("Loading the product details..."):
     off_percent = f"{off_percent}%" if off_percent else "N/A"
 
     user_name = server_state.get("username")
-    reviews = get_reviews(_id, product_id, user_name)
+    reviews = get_reviews(product_id, user_name)
 
     already_reviewed = reviews.get("already_reviewed", {})
     mean_rating = reviews.get("mean_rating", 0.0)
@@ -88,12 +88,12 @@ with st.spinner("Loading the product details..."):
                     st.write("You have already reviewed this product.")
                     with st.container(border=True):
                         rev_cols = st.columns(2, gap="small")
-                        s = ":star:" * already_reviewed["rating"]
+                        s = ":star:" * already_reviewed[0]["rating"]
                         with rev_cols[0]:
-                            st.write(f"**{already_reviewed['nickname']}** *{already_reviewed['date']}*")
+                            st.write(f"**{already_reviewed[0]['nickname']}** *{already_reviewed[0]['date']}*")
                             st.write(s)
                         with rev_cols[1]:
-                            st.write(f"*{already_reviewed['review']}*")
+                            st.write(f"*{already_reviewed[0]['review']}*")
 
                     go_to_reviews = st.button("Go to your reviews", key="go_to_reviews", type="secondary")
                     if go_to_reviews:
@@ -125,7 +125,7 @@ with st.spinner("Loading the product details..."):
                                 st.rerun()
     st.divider()
     st.subheader("Product reviews", divider=False)
-    st.markdown(f"<h4>Mean rating: {mean_rating['mean']:.1f} ⭐</h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4>Mean rating: {mean_rating:.1f} ⭐</h4>", unsafe_allow_html=True)
 
     reviews = reviews.get("reviews", [])
     grid = st.columns(ROW_SIZE_PRODUCT_REVIEWS)

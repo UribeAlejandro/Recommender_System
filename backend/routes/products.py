@@ -1,86 +1,107 @@
 import logging
 
+import pymongo
+from beanie.operators import NE, And, Exists, In, RegEx
 from bson import ObjectId
 from fastapi import APIRouter
-from fastapi.responses import ORJSONResponse
 
-from backend.constants import COLLECTION_DETAILS, DATABASE_NAME
-from backend.models.Collections import ProductDetails
+from backend.models.Collections import ProductDetails, ProductsPaged
 from backend.models.Response import ProductsResponse
-from backend.routes.utils import get_all_applicable_pets, get_mongo_database
 
 router = APIRouter(prefix="/products")
 logger = logging.getLogger("uvicorn")
 
 
-@router.get("/", status_code=200, response_class=ORJSONResponse, response_model=ProductsResponse)
-async def get_products(search: str, applicable_pet: str):
+@router.get("/", status_code=200, response_model=ProductsResponse)
+async def get_products(
+    search: str = "",
+    sort: str = "",
+    applicable_pet: str = "",
+    category: str = "",
+    subcategory: str = "",
+    page_size: int = 20,
+    page_start: int = 0,
+) -> ProductsPaged:
     """
     Get products.
 
+    Parameters
+    ----------
+    search : str
+        The search string for the product title
+    sort : str
+        The sort field
+    applicable_pet : str
+        Filter by applicable pet
+    category : str
+        Filter by category
+    subcategory : str
+        Filter by subcategory
+    page_size : int
+        The page size
+    page_start : int
+        The page start
+
     Returns
     -------
-    dict
-        The products
+    ProductsPaged
+        The products paged
     """
-    logger.info("Getting products...")
-    all_applicable_pets_list = get_all_applicable_pets()
+    all_category = await ProductDetails.distinct("category")
+    all_subcategory = await ProductDetails.distinct("subcategory")
+    all_applicable_pets_list = await ProductDetails.distinct("description_items.applicable pet")
 
-    db = get_mongo_database(DATABASE_NAME)
-    collection = db.get_collection(COLLECTION_DETAILS)
+    sort_key = ProductDetails.id, pymongo.DESCENDING
+
+    if sort == "Relevance":
+        sort_key = ProductDetails.id, pymongo.ASCENDING
+    elif sort == "Highest Discount":
+        sort_key = ProductDetails.off_percent, pymongo.DESCENDING
+    elif sort == "Alphabetical: A-Z":
+        sort_key = ProductDetails.title, pymongo.ASCENDING
+    elif sort == "Alphabetical: Z-A":
+        sort_key = ProductDetails.title, pymongo.DESCENDING
+    elif sort == "Price: Low to High":
+        sort_key = ProductDetails.price_discount, pymongo.ASCENDING
+    elif sort == "Price: High to Low":
+        sort_key = ProductDetails.price_discount, pymongo.DESCENDING
+
     title_search = search if search else ""
+    category = category.split(",") if category else all_category
+    subcategory = subcategory.split(",") if subcategory else all_subcategory
     app_pet = applicable_pet.split(",") if applicable_pet else all_applicable_pets_list
 
-    filter_dict = {
-        "$and": [
-            {"image_path": {"$exists": True}},
-            {"image_path": {"$ne": "pending"}},
-            {"title": {"$regex": title_search, "$options": "i"}},
-            {"description_items.applicable pet": {"$in": app_pet}},
-        ]
-    }
-
-    products = collection.find(
-        filter_dict,
-        {
-            "_id": 1,
-            "title": 1,
-            "image_path": 1,
-            "product_id": 1,
-            "price_discount": 1,
-            "off_percent": 1,
-            "description_items.applicable pet": 1,
-        },
+    filter_dict = And(
+        Exists(ProductDetails.image_path, True),
+        NE(ProductDetails.image_path, "pending"),
+        RegEx(ProductDetails.title, title_search, "i"),
+        In(ProductDetails.description_items["applicable pet"], app_pet),
+        In(ProductDetails.category, category),
+        In(ProductDetails.subcategory, subcategory),
     )
-    response = ProductsResponse(products=list(products))
-    return ORJSONResponse(response.model_dump())
+    number = await ProductDetails.find(filter_dict).count()
+    products_list = await ProductDetails.find(filter_dict, limit=page_size, skip=page_start).sort([sort_key]).to_list()
+
+    return ProductsPaged(
+        number, products_list, page_size + page_start < number, all_applicable_pets_list, all_category, all_subcategory
+    )
 
 
-@router.post("/details", status_code=200)
-async def get_product(product_filter: dict):
+@router.post("/details", status_code=200, response_model=ProductDetails)
+async def get_product(filter_dict: dict) -> ProductDetails:
     """
     Get product.
 
+    Parameters
+    ----------
+    filter_dict: dict
+        The filter dictionary
+
     Returns
     -------
-    dict
+    ProductDetails
         The product
     """
-    db = get_mongo_database(DATABASE_NAME)
-    collection_products = db.get_collection(COLLECTION_DETAILS)
-    product_filter = {k: (ObjectId(v) if k == "_id" else v) for k, v in product_filter.items()}
-
-    product_details = collection_products.find_one(
-        product_filter,
-        {
-            "_id": 1,
-            "title": 1,
-            "image_path": 1,
-            "product_id": 1,
-            "price_discount": 1,
-            "price_real": 1,
-            "off_percent": 1,
-            "description_items": 1,
-        },
-    )
-    return ProductDetails(**product_details)
+    product_filter = {k: (ObjectId(v) if k == "_id" else v) for k, v in filter_dict.items()}
+    product = await ProductDetails.find_one(product_filter)
+    return product

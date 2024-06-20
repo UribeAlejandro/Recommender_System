@@ -1,50 +1,56 @@
-import time
-from datetime import datetime
-
+from beanie.operators import And, Eq
 from bson import ObjectId
 from fastapi import APIRouter
+from pymongo import ASCENDING
 
-from backend.constants import COLLECTION_REVIEWS, DATABASE_NAME
 from backend.models.Collections import ProductReview
 from backend.models.Payload import ReviewPayload
 from backend.models.Response import ProductReviews
-from backend.routes.utils import get_mongo_database
 
 router = APIRouter(prefix="/reviews")
 
 
-@router.get("/", status_code=200)
-async def get_reviews(mongo_id: str, product_id: str, user_name: str):
+@router.get("/", status_code=200, response_model=ProductReviews)
+async def get_reviews(product_id: str, user_name: str) -> ProductReviews:
     """
     Get reviews.
 
+    Parameters
+    ----------
+    product_id: str
+        The product ID
+    user_name: str
+        The username
+
     Returns
     -------
-    dict
+    ProductReviews
         The reviews
     """
-    db = get_mongo_database(DATABASE_NAME)
-    collection_reviews = db.get_collection(COLLECTION_REVIEWS)
-    already_reviewed = collection_reviews.find_one({"product_id": product_id, "nickname": user_name})
-    mean_rating = collection_reviews.aggregate(
-        [
-            {"$match": {"product_id": product_id}},
-            {"$group": {"_id": ObjectId(mongo_id), "mean": {"$avg": "$rating"}}},
-            {"$project": {"_id": 0, "mean": 1}},
-        ]
+    already_reviewed = await ProductReview.find(
+        And(Eq(ProductReview.product_id, product_id), Eq(ProductReview.nickname, user_name))
+    ).to_list()
+    mean_rating = await ProductReview.find(ProductReview.product_id == product_id).avg(ProductReview.rating)
+
+    reviews = await (
+        ProductReview.find(
+            And(
+                Eq(ProductReview.product_id, product_id),
+            )
+        )
+        .sort([(ProductReview.timestamp, ASCENDING)])
+        .to_list()
     )
-    mean_rating = next(mean_rating, {"mean": 0})
-    reviews = collection_reviews.find(
-        {"product_id": product_id},
-        {"_id": 0, "nickname": 1, "rating": 1, "review": 1, "date": 1, "product_id": 1, "timestamp": 1},
-    ).sort({"timestamp": -1})
-    reviews = ProductReviews(reviews=list(reviews)).reviews
-    already_reviewed = ProductReview(**already_reviewed) if already_reviewed else None
-    return {"already_reviewed": already_reviewed, "mean_rating": mean_rating, "reviews": reviews}
+
+    already_reviewed = already_reviewed if already_reviewed else None
+    mean_rating = mean_rating if mean_rating else 0.0
+    response_dict = {"already_reviewed": already_reviewed, "mean_rating": mean_rating, "reviews": reviews}
+    response = ProductReviews(**response_dict)
+    return response
 
 
 @router.post("/", status_code=201)
-async def post_reviews(payload: ReviewPayload):
+async def post_review(payload: ReviewPayload):
     """
     Post reviews.
 
@@ -53,32 +59,42 @@ async def post_reviews(payload: ReviewPayload):
     dict
         The reviews
     """
-    db = get_mongo_database(DATABASE_NAME)
-    collection_reviews = db.get_collection(COLLECTION_REVIEWS)
-    collection_reviews.insert_one(
-        {
-            "product_id": payload.product_id,
-            "nickname": payload.nickname,
-            "rating": payload.rating,
-            "review": payload.review,
-            "date": time.strftime("%d %b, %Y"),
-            "timestamp": datetime.now(),
-        }
-    )
+    await ProductReview(**payload.dict()).insert()
+
     return {"status": "success"}
 
 
 @router.delete("/", status_code=200)
-async def delete_reviews(mongo_id: str, product_id: str, nickname: str):
+async def delete_review(mongo_id: str, product_id: str, nickname: str) -> dict:
     """
-    Delete reviews.
+    Delete review.
+
+    Parameters
+    ----------
+    mongo_id: str
+        The mongo ID of the review
+    product_id: str
+        The product ID
+    nickname: str
+        The nickname
 
     Returns
     -------
     dict
-        The reviews
+        The status
     """
-    db = get_mongo_database(DATABASE_NAME)
-    collection_reviews = db.get_collection(COLLECTION_REVIEWS)
-    collection_reviews.delete_one({"_id": ObjectId(mongo_id), "nickname": nickname, "product_id": product_id})
-    return {"status": "success"}
+    try:
+        await (
+            ProductReview.find(ProductReview.id == ObjectId(mongo_id))
+            .find(
+                And(
+                    Eq(ProductReview.id, ObjectId(mongo_id)),
+                    Eq(ProductReview.product_id, product_id),
+                    Eq(ProductReview.nickname, nickname),
+                )
+            )
+            .delete()
+        )
+        return {"status": "success"}
+    except Exception:
+        return {"status": "failed"}

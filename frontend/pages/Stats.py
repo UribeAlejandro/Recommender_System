@@ -3,7 +3,7 @@ import plotly.express as px
 import streamlit as st
 
 from frontend.constants import FOOTER
-from frontend.pages.config import hide_image_fullscreen, make_sidebar
+from frontend.utils.config import hide_image_fullscreen, make_sidebar
 
 st.set_page_config(
     layout="centered",
