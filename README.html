@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Doge Market</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="doge-market">Doge Market</h1>
+<p><a href="https://github.com/UribeAlejandro/Recommender_System/actions/workflows/ci.yml"><img src="https://github.com/UribeAlejandro/Recommender_System/actions/workflows/ci.yml/badge.svg" alt="Continuous Integration"></a></p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#doge-market">Doge Market</a>
+<ul>
+<li><a href="#table-of-contents">Table of Contents</a></li>
+<li><a href="#about">About</a>
+<ul>
+<li><a href="#author">Author</a></li>
+<li><a href="#description">Description</a></li>
+</ul>
+</li>
+<li><a href="#architecture">Architecture</a>
+<ul>
+<li><a href="#data">Data</a></li>
+<li><a href="#web">Web</a></li>
+<li><a href="#recommender">Recommender</a>
+<ul>
+<li><a href="#collaborative-filtering">Collaborative Filtering</a></li>
+<li><a href="#content-based-filtering">Content-Based Filtering</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#tech-stack">Tech stack</a>
+<ul>
+<li><a href="#continuous-integration-and-continuous-deployment">Continuous Integration and Continuous Deployment</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="about">About</h2>
+<h3 id="author">Author</h3>
+<p><a href="https://uribealejandro.github.io/">Alejandro Uribe</a> Chemical Engineer from <a href="https://unal.edu.co/"><code>Universidad Nacional de Colombia</code></a>, Specialist in Artificial Intelligence from <a href="https://unal.edu.co/"><code>Universidad Nacional de Colombia</code></a> and student of the <a href="https://datamining.dc.uba.ar/"><code>Master in Data Mining &amp; Knowledge Discovery</code></a> at <a href="https://www.uba.ar/"><code>Universidad de Buenos Aires</code></a>.</p>
+<h3 id="description">Description</h3>
+<p><code>Doge Market</code> is an e-commerce like website, this is the final project for the course <a href="https://datamining.dc.uba.ar/datamining/sistemas-de-recomendacion/"><code>Recommender Systems - Fall 2024</code></a>, taught by <code>Roberto Abalde</code>. The course is part of the <a href="https://datamining.dc.uba.ar/"><code>Master in Data Mining &amp; Knowledge Discovery</code></a> at <a href="https://www.uba.ar/"><code>Universidad de Buenos Aires</code></a>.</p>
+<p>The project stated that the final product should be a web application that allows users to see products for their pets, the data must come from a real source, that was scrapped for the sake of the project. Finally, the website should have a recommender system that suggests products to users based on their behavior on the website.</p>
+<h2 id="architecture">Architecture</h2>
+<p>The project was developed using a microservices architecture, the project is divided into three main components: <code>Data</code>, <code>Web</code>, and <code>Recommender</code>. The components are independent and can be deployed separately, the communication between the components is done through the database, in this case, <code>MongoDB</code></p>
+<ol>
+<li><strong>Data</strong>:
+<ol>
+<li><strong>Scraper</strong>: Python script to scrape the data from the website.</li>
+<li><strong>Driver</strong>: Remote <code>Selenium</code> driver to scrape the data.</li>
+<li><strong>Database</strong>: <code>MongoDB</code> database to store the data.</li>
+</ol>
+</li>
+<li><strong>Web</strong>: <code>Streamlit</code> web application to display the data and recommendations.</li>
+<li><strong>Recommender</strong>: <code>Recommender</code> system to suggest products to users.</li>
+</ol>
+<p>All the services and their networking are shown in the following diagram:</p>
+<p><img src="file:////Users/uribe/Documents/Master/SR/Recommender_System/img/docs/all_microservices.svg" alt="Architecture"></p>
+<h3 id="data">Data</h3>
+<p>The data is scraped from the website <a href="https://us.shein.com/"><code>Shein</code></a>, then it is stored in a <code>MongoDB</code> database. The library <code>Selenium</code> for Python is used to scrape the data. There is a <code>Docker</code> container running the <code>Selenium</code> driver that is used to scrape the data.</p>
+<p>A <code>MongoDB</code> database is running in another <code>Docker</code> container, the data is stored in the database. The data is stored in three collections:</p>
+<ol>
+<li><strong>Product URL</strong>: Contains the URLs of the products. This is the initial data that is scraped, the data is then used to scrape the rest of the information. None of the services use this data.</li>
+<li><strong>Product Details</strong>: Contains the information of the products.</li>
+<li><strong>Product Reviews</strong>: Contains the reviews of the products.</li>
+</ol>
+<p>Further collections are added by other services to store the user login information, user behavior on the website and the recommendations.</p>
+<h3 id="web">Web</h3>
+<p>The <code>Web</code> service is a <code>Streamlit</code> web application that displays the products and recommendations to the users. The web application is deployed in a <code>Docker</code> container. The web application uses the <code>MongoDB</code> database to display the products and recommendations.</p>
+<p>It also holds communication with the <code>Recommender</code> service to get the recommendations for the users and to store the user behavior in the database.</p>
+<h3 id="recommender">Recommender</h3>
+<p>After the data is stored in the database, the <code>Recommender</code> service uses the data to suggest products to users. The collaborative filtering and content-based filtering algorithms are used to suggest products to users.</p>
+<p>The recommendations are based on the user's behavior on the website. The system uses the <code>Collaborative Filtering</code> and <code>Content-Based Filtering</code> algorithms to suggest products to users.</p>
+<h4 id="collaborative-filtering">Collaborative Filtering</h4>
+<h4 id="content-based-filtering">Content-Based Filtering</h4>
+<h2 id="tech-stack">Tech stack</h2>
+<ul>
+<li>Python</li>
+<li>Streamlit</li>
+<li>MongoDB</li>
+<li>Docker</li>
+<li>Google Cloud Platform</li>
+<li>GitHub Actions</li>
+</ul>
+<h3 id="continuous-integration-and-continuous-deployment">Continuous Integration and Continuous Deployment</h3>
+<p>The project is deployed on <code>Google Cloud Platform</code> using <code>Docker</code> containers. The deployment is done using <code>GitHub Actions</code> and the <code>Docker</code> images are stored in the <code>Google Cloud Platform</code> container registry.</p>
+
+
+
+        </body>
+        </html>

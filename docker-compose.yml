@@ -5,66 +5,65 @@ services:
     volumes:
       - ./database/mongo:/data/db
     ports:
-      - "27017:27017"
+      - 27017:27017
+    expose:
+      - 27017
+    networks:
+      - db
 
-  standalone-selenium:
-    image: seleniarm/standalone-firefox:latest
-    ports:
-      - "4444:4444"
-
-  scrapper:
+  backend:
     build:
       context: .
-      dockerfile: Dockerfile-scrapper
-    image: scrapper
-    container_name: scrapper
+      dockerfile: Dockerfile-backend
+    image: backend
     restart: unless-stopped
-    command: python -m scrapper.main
-    depends_on:
-      - database
-      - standalone-selenium
-    environment:
-      - MONGO_HOST=database
-      - SELENIUM_HOST=standalone-selenium
-
-  recommender:
-    build:
-      context: .
-      dockerfile: Dockerfile-recommender
-    image: recommender
-    container_name: recommender
-    restart: unless-stopped
-    command: python -m recommender.main
+    command: uvicorn backend.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+    expose:
+      - 8000
     depends_on:
       - database
     environment:
-      - MONGO_HOST=database
+      - PORT=8000
+      - MONGO_URI=database:27017
+    networks:
+      - db
+      - back
 
-  web:
+  frontend:
     build:
       context: .
-      dockerfile: Dockerfile-web
-    image: web
-    container_name: web
+      dockerfile: Dockerfile-frontend
+    image: frontend
+    container_name: frontend
     restart: unless-stopped
-    command: python -m streamlit run web/main.py
-    ports:
-      - "8501:8501"
+    command: python -m streamlit run frontend/main.py
+    expose:
+      - 8501
     depends_on:
-      - database
-#      - recommender
-    environment:
-      - MONGO_HOST=database
+      - backend
     volumes:
       - ./img:/img
+    environment:
+      - BACKEND_URL=http://backend:8000
+    networks:
+      - back
+      - nginx
 
   nginx-proxy:
     image: nginx:latest
     container_name: nginx
-    restart: always
+    restart: unless-stopped
     ports:
       - "8080:8080"
     volumes:
       - ./etc/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
-      - web
+      - frontend
+    networks:
+      - back
+      - nginx
+
+networks:
+  db:
+  back:
+  nginx:

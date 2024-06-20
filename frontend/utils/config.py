@@ -3,7 +3,7 @@ from streamlit.runtime.scriptrunner import get_script_run_ctx
 from streamlit.source_util import get_pages
 from streamlit_server_state import server_state, server_state_lock
 
-from web.utils.auth import logout
+from frontend.utils.auth import logout
 
 
 def hide_image_fullscreen():

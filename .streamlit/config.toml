@@ -8,6 +8,3 @@ showErrorDetails = true
 [server]
 port = 8501
 headless=true
-
-[logger]
-level = "debug"

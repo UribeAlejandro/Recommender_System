@@ -1,6 +1,6 @@
 env
 .dockerignore
-Dockerfile-web
+Dockerfile-frontend
 tests/
 .github/
 .dvc/
