@@ -3,3 +3,5 @@ pymongo
 pydantic
 motor[srv]
 beanie
+plotly
+pandas

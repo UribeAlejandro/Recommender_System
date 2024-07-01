@@ -6,7 +6,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from backend.constants import DATABASE_NAME, MONGO_URI
 from backend.models import __beanie_models__
-from backend.routes import ping, products, reviews, user
+from backend.routes import ping, products, recommender, reviews, stats, user
 
 logger = logging.getLogger("uvicorn")
 
@@ -28,6 +28,8 @@ async def startup_event():
     app.include_router(ping.router)
     app.include_router(user.router)
     app.include_router(reviews.router)
+    app.include_router(recommender.router)
+    app.include_router(stats.router)
     app.include_router(products.router, tags=["products"])
 
 

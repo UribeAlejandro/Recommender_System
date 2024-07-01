@@ -46,7 +46,7 @@ if not server_state.get("authentication_status", False):
                         server_state.authentication_status = True
                         server_state.username = username
                         sleep(1)
-                st.switch_page("pages/Products.py")
+                st.switch_page("pages/Hot_Products.py")
             else:
                 with st.spinner("Checking credentials..."):
                     sleep(2)
@@ -57,9 +57,9 @@ if not server_state.get("authentication_status", False):
             with no_rerun:
                 server_state.authentication_status = True
                 server_state.username = "guest"
-        st.switch_page("pages/Products.py")
+        st.switch_page("pages/Hot_Products.py")
 else:
     with st.spinner("Redirecting to products page..."):
-        st.switch_page("pages/Products.py")
+        st.switch_page("pages/Hot_Products.py")
 
 st.markdown(FOOTER, unsafe_allow_html=True)

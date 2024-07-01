@@ -1,16 +1,4 @@
 services:
-  database:
-    image: mongo:latest
-    restart: unless-stopped
-    volumes:
-      - ./database/mongo:/data/db
-    ports:
-      - 27017:27017
-    expose:
-      - 27017
-    networks:
-      - db
-
   backend:
     build:
       context: .
@@ -20,14 +8,13 @@ services:
     command: uvicorn backend.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
     expose:
       - 8000
-    depends_on:
-      - database
     environment:
       - PORT=8000
       - MONGO_URI=database:27017
     networks:
-      - db
       - back
+    volumes:
+      - ./backend:/backend
 
   frontend:
     build:
@@ -43,6 +30,7 @@ services:
       - backend
     volumes:
       - ./img:/img
+      - ./frontend:/frontend
     environment:
       - BACKEND_URL=http://backend:8000
     networks:
@@ -64,6 +52,5 @@ services:
       - nginx
 
 networks:
-  db:
   back:
   nginx:
