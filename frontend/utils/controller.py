@@ -139,6 +139,19 @@ def get_user_reviews(nickname: str):
 
 
 def get_recommendations(nickname: str):
+    """
+    Get recommendations.
+
+    Parameters
+    ----------
+    nickname : str
+        The nickname
+
+    Returns
+    -------
+    dict
+        The user recommendations
+    """
     params = {"nickname": nickname}
     products_req = requests.get(f"{BACKEND_URL}/recommender/", params=params)
     products_json = products_req.json()
@@ -147,7 +160,34 @@ def get_recommendations(nickname: str):
 
 
 def get_rating_charts():
+    """
+    Get stats.
+
+    Returns
+    -------
+    dict
+        Plots and stats
+    """
     response = requests.get(f"{BACKEND_URL}/stats/")
     rating_charts = response.json()
 
     return rating_charts
+
+
+def get_similar_products(title):
+    """
+    Get similar products.
+
+    Parameters
+    ----------
+    title : str
+        The title
+    Returns
+    -------
+
+    """
+    params = {"title": title}
+    response = requests.get(f"{BACKEND_URL}/recommender/similar", params=params)
+    similar_products = response.json()
+
+    return similar_products

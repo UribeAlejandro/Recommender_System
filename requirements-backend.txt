@@ -5,3 +5,7 @@ motor[srv]
 beanie
 plotly
 pandas
+gpt4all
+pinecone-client
+langchain
+langchain-community

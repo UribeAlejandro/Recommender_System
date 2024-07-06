@@ -1,16 +1,32 @@
 import logging
 
+from beanie.odm.operators.find.logical import Not
 from beanie.operators import In
+from bson import ObjectId
 from fastapi import APIRouter
 
 from backend.models.Collections import ProductDetails, ProductReview
+from backend.recommender.utils import get_recommendations
 
 router = APIRouter(prefix="/recommender")
 logger = logging.getLogger("uvicorn")
 
 
 @router.get("/", status_code=200, response_model=None)
-async def get_recommendations(nickname: str):
+async def user_recommendations(nickname: str):
+    """
+    Get user recommendations.
+
+    Parameters
+    ----------
+    nickname : str
+        The nickname
+
+    Returns
+    -------
+    dict
+        The user recommendations
+    """
     number_of_reviews = await ProductReview.find(ProductReview.nickname == nickname).count()
 
     user_s_most_reviews = await ProductReview.aggregate(
@@ -41,3 +57,26 @@ async def get_recommendations(nickname: str):
 
     number = await result.count()
     return {"items": items, "number": number, "model": model}
+
+
+@router.get("/similar", status_code=200, response_model=None)
+async def get_similar_products(title: str) -> list[ProductDetails]:
+    """
+    Get similar products.
+
+    Parameters
+    ----------
+    title : str
+        The title
+
+    Returns
+    -------
+    list[ProductDetails]
+        The similar products
+    """
+    res = get_recommendations(title, 7)
+    mongo_ids = [ObjectId(r.metadata["_id"]) for r in res.matches]
+    products = await ProductDetails.find(In(ProductDetails.id, mongo_ids), Not(ProductDetails.title == title)).to_list()
+    products = products[:5]
+
+    return products

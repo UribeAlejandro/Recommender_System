@@ -12,18 +12,28 @@ logger = logging.getLogger("uvicorn")
 
 
 class Ratings(BaseModel):
+    """Ratings model."""
+
     rating: int
 
 
 @router.get("/", status_code=200, response_model=None)
 async def get_stats():
+    """
+    Get stats.
+
+    Returns
+    -------
+    dict
+        Plots and stats
+    """
     response = {}
     response["number_of_reviews"] = await ProductReview.count()
     response["number_of_products"] = await ProductDetails.count()
     distinct_of_users = await ProductReview.distinct("nickname")
     response["number_of_users"] = len(distinct_of_users)
     reviews = await ProductReview.find().to_list()
-    reviews = [review.dict() for review in reviews]
+    reviews = [review.model_dump() for review in reviews]
 
     reviews = pd.DataFrame(reviews)
 

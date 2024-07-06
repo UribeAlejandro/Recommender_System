@@ -10,11 +10,12 @@ services:
       - 8000
     environment:
       - PORT=8000
-      - MONGO_URI=database:27017
+      - MONGO_URI=mongodb+srv://jauriberamirez:jWowycmd2j49a8RU@sr-cluster.ikxkpft.mongodb.net/?retryWrites=true&w=majority&appName=SR-Cluster
     networks:
       - back
     volumes:
       - ./backend:/backend
+    env_file: ".env"
 
   frontend:
     build:
@@ -36,6 +37,7 @@ services:
     networks:
       - back
       - nginx
+    env_file: ".env"
 
   nginx-proxy:
     image: nginx:latest

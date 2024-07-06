@@ -14,5 +14,4 @@ make_sidebar()
 with open("README.html") as f:
     st.html(f.read())
 
-
 st.markdown(FOOTER, unsafe_allow_html=True)
