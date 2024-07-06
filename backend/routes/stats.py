@@ -12,21 +12,11 @@ logger = logging.getLogger("uvicorn")
 
 
 class Ratings(BaseModel):
-    """Ratings model."""
-
     rating: int
 
 
 @router.get("/", status_code=200, response_model=None)
 async def get_stats():
-    """
-    Get stats.
-
-    Returns
-    -------
-    dict
-        Plots and stats
-    """
     response = {}
     response["number_of_reviews"] = await ProductReview.count()
     response["number_of_products"] = await ProductDetails.count()
