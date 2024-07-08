@@ -3,7 +3,6 @@ from math import ceil
 
 import streamlit as st
 from streamlit_card import card
-from streamlit_server_state import no_rerun, server_state
 
 from frontend.constants import BATCH_SIZE_REVIEWS, FOOTER, ROW_SIZE_REVIEWS
 from frontend.utils.config import hide_image_fullscreen, make_sidebar
@@ -23,11 +22,11 @@ st.subheader("Your reviews", divider=True)
 
 page = st.session_state.get("page_reviews", 1)
 
-if server_state.get("username", None) is None:
+if st.session_state.get("username", None) is None:
     st.warning("Please log in to view your reviews.")
 else:
     grid = st.columns(ROW_SIZE_REVIEWS)
-    reviews = get_user_reviews(server_state.username)
+    reviews = get_user_reviews(st.session_state.get("username"))
     if page is None:
         st.info("No reviews yet. Go and find the products you love!")
         st.stop()
@@ -71,8 +70,7 @@ else:
                             },
                         )
                         if product_card:
-                            with no_rerun:
-                                st.session_state["_id"] = str(_id_product)
+                            st.session_state["_id"] = str(_id_product)
                             st.switch_page("pages/Product.py")
                     with rev_cols[1]:
                         st.html(f"<strong>{title}</strong>")
@@ -82,31 +80,8 @@ else:
                         delete = st.button("❌", key=f"delete{str(_id_review)}", help="Delete review")
 
                     if delete:
-                        r = delete_review(_id_review, product_id, server_state.username)
+                        r = delete_review(_id_review, product_id, st.session_state.get("username"))
                         st.rerun()
-
-                    # confirm_delete = Modal(
-                    #     "Are you sure you want to delete this review?", key="modal-delete-review", max_width=450
-                    # )
-                    # if delete:
-                    #     confirm_delete.open()
-                    # if confirm_delete.is_open():
-                    #     with confirm_delete.container():
-                    #         st.write("*This action cannot be undone.*")
-                    #         confirm_cols = st.columns(3)
-                    #         with confirm_cols[0]:
-                    #             cancel = st.button("Cancel", key=f"cancel-delete{str(_id_review)}")
-                    #         with confirm_cols[1]:
-                    #             delete_ = st.button("Delete", key=f"accept-delete{str(_id_review)}", type="primary")
-                    #         if cancel:
-                    #             confirm_delete.close()
-                    #         if delete_:
-                    #             r = delete_review(_id_review, product_id, server_state.username)
-                    #             if r.status_code == 200:
-                    #                 st.success("Review deleted successfully.")
-                    #                 confirm_delete.close()
-                    #             else:
-                    #                 st.error("Failed to delete review.")
 
             col = (col + 1) % ROW_SIZE_REVIEWS
     else:

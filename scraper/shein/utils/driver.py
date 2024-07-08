@@ -7,7 +7,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
-from shein.constants import DEBUG
+from scraper.constants import DEBUG
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

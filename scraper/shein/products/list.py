@@ -6,10 +6,10 @@ from pymongo.database import Database
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-from shein.constants import BLACKLISTED_WORDS, DOMAIN, PATH_OUT_JSON, URLS, USE_DB
-from shein.scrapper.utils.database import write_url_in_database
-from shein.scrapper.utils.scraper import get_max_pagination
-from shein.scrapper.utils.text import included_in_string
+from scraper.constants import BLACKLISTED_WORDS, DOMAIN, PATH_OUT_JSON, URLS, USE_DB
+from scraper.shein.utils.database import write_url_in_database
+from scraper.shein.utils.driver import get_max_pagination
+from scraper.shein.utils.text import included_in_string
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

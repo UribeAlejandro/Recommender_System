@@ -5,8 +5,8 @@ from pymongo.database import Database
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-from shein.constants import COLLECTION_DETAILS, COLLECTION_URLS
-from shein.scrapper.products.reviews import process_reviews
+from scraper.constants import COLLECTION_DETAILS, COLLECTION_URLS
+from scraper.shein.products.reviews import process_reviews
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

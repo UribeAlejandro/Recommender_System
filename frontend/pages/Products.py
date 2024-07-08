@@ -3,7 +3,6 @@ from math import ceil
 
 import streamlit as st
 from streamlit_card import card
-from streamlit_server_state import no_rerun
 
 from frontend.constants import FOOTER, ROW_SIZE
 from frontend.utils.config import hide_image_fullscreen, make_sidebar
@@ -130,8 +129,7 @@ with st.spinner("Loading the product list..."):
                 st.write(title[0:90])
 
                 if product_card:
-                    with no_rerun:
-                        st.session_state["_id"] = _id
+                    st.session_state["_id"] = _id
                     st.switch_page("pages/Product.py")
 
         col = (col + 1) % ROW_SIZE

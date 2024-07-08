@@ -3,8 +3,9 @@ base="light"
 
 [client]
 showSidebarNavigation = false
-showErrorDetails = true
+showErrorDetails = false
+toolbarMode = "viewer"
 
 [server]
-port = 8501
 headless=true
+enableStaticServing = true

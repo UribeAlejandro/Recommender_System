@@ -5,7 +5,6 @@ from math import ceil
 import streamlit as st
 from PIL import Image
 from streamlit_card import card
-from streamlit_server_state import no_rerun, server_state
 
 from frontend.constants import BATCH_SIZE_PRODUCT_REVIEWS, FOOTER, ROW_SIZE_PRODUCT_REVIEWS
 from frontend.utils.config import hide_image_fullscreen, make_sidebar
@@ -48,7 +47,7 @@ with st.spinner("Loading the product details..."):
     price_real = f"~~${price_real:.2f}~~" if price_real else ""
     off_percent = f"{off_percent}%" if off_percent else "N/A"
 
-    user_name = server_state.get("username")
+    user_name = st.session_state.get("username")
     reviews = get_reviews(product_id, user_name)
 
     already_reviewed = reviews.get("already_reviewed", {})
@@ -85,7 +84,7 @@ with st.spinner("Loading the product details..."):
                         st.write(f"{str(v).capitalize()}")
             st.divider()
             st.markdown("<h4>Review this product!</h4>", unsafe_allow_html=True)
-            if server_state.get("username") == "guest":
+            if st.session_state.get("username") == "guest":
                 st.error("You need to be logged in to review this product.")
             else:
                 if already_reviewed:
@@ -120,7 +119,7 @@ with st.spinner("Loading the product details..."):
                             )
                             submit = st.form_submit_button("Submit")
                             if submit:
-                                nickname = server_state.get("username")
+                                nickname = st.session_state.get("username")
                                 response = post_review(product_id, nickname, review, rating)
                                 if response.status_code == 201:
                                     st.success("Review submitted successfully!")
@@ -166,8 +165,7 @@ with st.spinner("Loading the product details..."):
                 st.write(title[0:90])
 
                 if product_card:
-                    with no_rerun:
-                        st.session_state["_id"] = _id
+                    st.session_state["_id"] = _id
                     st.switch_page("pages/Product.py")
 
     st.divider()

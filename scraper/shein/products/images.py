@@ -5,7 +5,7 @@ from copy import copy
 import requests
 from pymongo.database import Database
 
-from shein.constants import COLLECTION_DETAILS, IMAGE_DIR
+from scraper.constants import COLLECTION_DETAILS, IMAGE_DIR
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

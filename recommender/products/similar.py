@@ -2,16 +2,23 @@ import logging
 
 import pandas as pd
 from langchain_community.embeddings import GPT4AllEmbeddings
-from pinecone import Index, Pinecone, QueryResponse, ServerlessSpec
+from pinecone import Index, Pinecone, ServerlessSpec
 
-from recommender.constants import CHUNK_SIZE, EMBEDDINGS_MODEL, PINECONE_API_KEY, PINECONE_INDEX_NAME, TOTAL_ROWS
+from recommender.constants import (
+    CHUNK_SIZE,
+    EMBEDDINGS_MODEL,
+    PATH_PRODUCT_DETAILS,
+    PINECONE_API_KEY,
+    PINECONE_INDEX_NAME,
+    TOTAL_ROWS,
+)
 
 logger = logging.getLogger(__name__)
 
 
 def get_embeddings(text: str) -> list[float]:
     """
-    Get embeddings for the text
+    Get embeddings for the text.
 
     Parameters
     ----------
@@ -28,32 +35,9 @@ def get_embeddings(text: str) -> list[float]:
     return gpt4all_embd.embed_query(text)
 
 
-def get_recommendations(pinecone_index: Index, search_term: str, top_k: int = 10) -> QueryResponse:
-    """
-    Get recommendations from Pinecone index
-
-    Parameters
-    ----------
-    pinecone_index: Index
-        Pinecone index object
-    search_term: str
-        Search term
-    top_k: int (default=10)
-        Number of recommendations to return
-
-    Returns
-    -------
-    dict
-        Recommendations
-    """
-    embed = get_embeddings(search_term)
-    res = pinecone_index.query(vector=embed, top_k=top_k, include_metadata=True)
-    return res
-
-
 def get_or_create_pinecone_index() -> Index:
     """
-    Get or create Pinecone index
+    Get or create Pinecone index.
 
     Returns
     -------
@@ -78,14 +62,14 @@ def get_or_create_pinecone_index() -> Index:
 
 def embed_data_to_pinecone(index: Index) -> None:
     """
-    Embed data to Pinecone index
+    Embed data to Pinecone index.
 
     Parameters
     ----------
     index: Index
         Pinecone index object
     """
-    chunks = pd.read_csv("data/raw/shein-mirror.csv", chunksize=CHUNK_SIZE, nrows=TOTAL_ROWS)
+    chunks = pd.read_csv(PATH_PRODUCT_DETAILS, chunksize=CHUNK_SIZE, nrows=TOTAL_ROWS)
     chunk_num = 0
     for chunk in chunks:
         titles = chunk["title"].tolist()

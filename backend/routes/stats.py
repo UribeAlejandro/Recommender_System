@@ -12,11 +12,21 @@ logger = logging.getLogger("uvicorn")
 
 
 class Ratings(BaseModel):
+    """Ratings."""
+
     rating: int
 
 
 @router.get("/", status_code=200, response_model=None)
 async def get_stats():
+    """
+    Get stats.
+
+    Returns
+    -------
+    dict
+        The stats
+    """
     response = {}
     response["number_of_reviews"] = await ProductReview.count()
     response["number_of_products"] = await ProductDetails.count()
@@ -30,7 +40,8 @@ async def get_stats():
     fig = px.histogram(reviews, x="rating", color="rating", title="Rating Distribution", text_auto=True)
     response["rating_distribution"] = fig.to_json()
 
-    fig = px.histogram(reviews, x="rating", y="price_real", color="rating", title="Rating Distribution", text_auto=True)
-    response["rating_distribution_price"] = fig.to_json()
+    # fig = px.histogram(reviews, x="rating", y="price_real",
+    # color="rating", title="Rating Distribution", text_auto=True)
+    # response["rating_distribution_price"] = fig.to_json()
 
     return response

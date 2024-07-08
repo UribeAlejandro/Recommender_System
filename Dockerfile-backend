@@ -8,4 +8,4 @@ COPY backend backend
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD gunicorn --bind 0.0.0.0:$PORT backend.main:app -k uvicorn.workers.UvicornWorker
+#CMD gunicorn --bind 0.0.0.0:$BACKEND_PORT backend.main:app -k uvicorn.workers.UvicornWorker

@@ -24,9 +24,9 @@ rating_distribution = charts["rating_distribution"]
 fig = plotly.io.from_json(rating_distribution)
 st.plotly_chart(fig, use_container_width=True)
 
-rating_distribution_price = charts["rating_distribution_price"]
-fig = plotly.io.from_json(rating_distribution_price)
-st.plotly_chart(fig, use_container_width=True)
+# rating_distribution_price = charts["rating_distribution_price"]
+# fig = plotly.io.from_json(rating_distribution_price)
+# st.plotly_chart(fig, use_container_width=True)
 
 
 # Plot!
