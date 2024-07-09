@@ -1,7 +1,7 @@
 import streamlit as st
 
-from frontend.constants import FOOTER
-from frontend.utils.config import hide_image_fullscreen, make_sidebar
+from web.constants import FOOTER
+from web.utils.pages import hide_image_fullscreen, make_sidebar
 
 st.set_page_config(
     layout="centered",

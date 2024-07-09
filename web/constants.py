@@ -1,6 +1,11 @@
 import os
 
-BACKEND_URL = os.environ.get("BACKEND_URL", "http://localhost:8000")
+MONGO_HOST = os.environ.get("MONGO_HOST", "localhost")
+DATABASE_URL = f"mongodb://{MONGO_HOST}:27017/"
+DATABASE_NAME = "shein"
+COLLECTION_URLS = "product_urls"
+COLLECTION_DETAILS = "product_details"
+COLLECTION_REVIEWS = "product_reviews"
 ROW_SIZE = 5
 
 FOOTER = """
@@ -40,7 +45,3 @@ small {
 target="_blank">Alejandro Uribe</a></small>
 </div>
 """
-ROW_SIZE_REVIEWS = 1
-BATCH_SIZE_REVIEWS = 5
-ROW_SIZE_PRODUCT_REVIEWS = 1
-BATCH_SIZE_PRODUCT_REVIEWS = 5

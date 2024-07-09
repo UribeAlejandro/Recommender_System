@@ -1,7 +1,4 @@
-watchdog
-requests
+pymongo
 streamlit
 streamlit-card
-streamlit-modal
 streamlit-server-state
-plotly

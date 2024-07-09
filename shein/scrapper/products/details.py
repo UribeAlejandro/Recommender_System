@@ -43,8 +43,6 @@ def get_details(driver: webdriver.Chrome, mongo_database: Database) -> None:
             text_product_id = driver.find_element(By.CLASS_NAME, "product-intro__head-sku").text.replace("SKU: ", "")
             text_price = driver.find_element(By.CLASS_NAME, "ProductIntroHeadPrice").text
             element_description = driver.find_elements(By.CLASS_NAME, "product-intro__description-table-item")
-            categories = driver.find_element(By.CLASS_NAME, "bread-crumb__inner").get_attribute("innerText")
-            categories = categories.replace("\n", "").split("/")[1:-1]
 
             description = {
                 item.get_property("innerText").split(":")[0].lower().strip(): item.get_property("innerText")
@@ -63,7 +61,6 @@ def get_details(driver: webdriver.Chrome, mongo_database: Database) -> None:
                 "product_id": text_product_id,
                 "description_items": description,
                 "price": text_price,
-                "categories": categories,
             }
 
             product_details_collection.insert_one(product_data)

@@ -1,7 +1,7 @@
 import streamlit as st
 
-from frontend.constants import FOOTER
-from frontend.utils.config import make_sidebar
+from web.constants import FOOTER
+from web.utils.pages import make_sidebar
 
 st.set_page_config(
     layout="centered",
@@ -11,8 +11,7 @@ st.set_page_config(
 )
 make_sidebar()
 
-with open("README.html") as f:
-    st.html(f.read())
-
+with open("README.md") as f:
+    st.markdown(f.read(), unsafe_allow_html=True)
 
 st.markdown(FOOTER, unsafe_allow_html=True)

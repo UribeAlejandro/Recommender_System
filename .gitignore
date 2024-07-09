@@ -6,7 +6,6 @@
 .idea/
 database/mongo/
 img/products/
-*.zip
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

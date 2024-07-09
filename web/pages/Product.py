@@ -1,16 +1,16 @@
 import time
+from datetime import datetime
 from math import ceil
 
 import streamlit as st
 from PIL import Image
 from streamlit_server_state import server_state
 
-from frontend.constants import BATCH_SIZE_PRODUCT_REVIEWS, FOOTER, ROW_SIZE_PRODUCT_REVIEWS
-from frontend.utils.config import hide_image_fullscreen, make_sidebar
-from frontend.utils.controller import get_product, get_reviews, post_review
+from web.constants import COLLECTION_DETAILS, COLLECTION_REVIEWS, DATABASE_NAME, FOOTER
+from web.utils.database import get_mongo_database
+from web.utils.pages import hide_image_fullscreen, make_sidebar
 
 _id = st.session_state.get("_id", None)
-page = st.session_state.get("page_reviews", 1)
 
 if not _id:
     st.error("Product not found. Please select a product from the list.")
@@ -32,25 +32,24 @@ if back:
     st.switch_page("pages/Products.py")
 
 with st.spinner("Loading the product details..."):
-    product_details = get_product({"_id": str(_id)})
+    db = get_mongo_database(DATABASE_NAME)
+    collection_reviews = db.get_collection(COLLECTION_REVIEWS)
+    collection_products = db.get_collection(COLLECTION_DETAILS)
+
+    product_details = collection_products.find_one({"_id": _id})
 
     title = product_details["title"]
     img_route = product_details["image_path"]
     product_id = product_details["product_id"]
-
     price_discount = product_details.get("price_discount")
-    price_real = product_details.get("price_real")
-    off_percent = product_details.get("off_percent", 0)
+    price_real = product_details.get("price_real", price_discount)
+    off_percent = product_details.get("off_percent", "0%")
 
-    price_discount = f"${price_discount:.2f}" if price_discount else "N/A"
-    price_real = f"~~${price_real:.2f}~~" if price_real else ""
-    off_percent = f"{off_percent}%" if off_percent else "N/A"
-
-    user_name = server_state.get("username")
-    reviews = get_reviews(product_id, user_name)
-
-    already_reviewed = reviews.get("already_reviewed", {})
-    mean_rating = reviews.get("mean_rating", 0.0)
+    already_reviewed = collection_reviews.find_one({"product_id": product_id, "nickname": server_state.get("username")})
+    mean_rating = collection_reviews.aggregate(
+        [{"$match": {"product_id": product_id}}, {"$group": {"_id": _id, "mean": {"$avg": "$rating"}}}]
+    )
+    mean_rating = next(mean_rating, {"mean": 0})
 
     st.subheader(title, divider=True)
     cols = st.columns([2, 1, 3], gap="small")
@@ -72,7 +71,7 @@ with st.spinner("Loading the product details..."):
                     st.write("**Product ID**")
                 with col2:
                     st.markdown(f"**:red[{off_percent}]**")
-                    st.markdown(f"**:green[{price_discount}]** {price_real}")
+                    st.markdown(f"**:green[${price_discount}]** ~~${price_real}~~")
                     st.write(f"*{product_id}*")
                 for k, v in product_description.items():
                     with col1:
@@ -88,12 +87,12 @@ with st.spinner("Loading the product details..."):
                     st.write("You have already reviewed this product.")
                     with st.container(border=True):
                         rev_cols = st.columns(2, gap="small")
-                        s = ":star:" * already_reviewed[0]["rating"]
+                        s = ":star:" * already_reviewed["rating"]
                         with rev_cols[0]:
-                            st.write(f"**{already_reviewed[0]['nickname']}** *{already_reviewed[0]['date']}*")
+                            st.write(f"**{already_reviewed['nickname']}** *{already_reviewed['date']}*")
                             st.write(s)
                         with rev_cols[1]:
-                            st.write(f"*{already_reviewed[0]['review']}*")
+                            st.write(f"*{already_reviewed['review']}*")
 
                     go_to_reviews = st.button("Go to your reviews", key="go_to_reviews", type="secondary")
                     if go_to_reviews:
@@ -116,21 +115,28 @@ with st.spinner("Loading the product details..."):
                             )
                             submit = st.form_submit_button("Submit")
                             if submit:
-                                nickname = server_state.get("username")
-                                response = post_review(product_id, nickname, review, rating)
-                                if response.status_code == 201:
-                                    st.success("Review submitted successfully!")
-                                else:
-                                    st.error("Failed to submit review. Please try again.")
+                                collection_reviews.insert_one(
+                                    {
+                                        "product_id": product_id,
+                                        "nickname": server_state.get("username"),
+                                        "review": review,
+                                        "rating": len(rating),
+                                        "date": time.strftime("%d %b, %Y"),
+                                        "timestamp": datetime.now(),
+                                    }
+                                )
                                 st.rerun()
     st.divider()
     st.subheader("Product reviews", divider=False)
-    st.markdown(f"<h4>Mean rating: {mean_rating:.1f} ⭐</h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4>Mean rating: {mean_rating['mean']:.2f} ⭐</h4>", unsafe_allow_html=True)
 
-    reviews = reviews.get("reviews", [])
-    grid = st.columns(ROW_SIZE_PRODUCT_REVIEWS)
-    num_batches = ceil(len(reviews) / BATCH_SIZE_PRODUCT_REVIEWS)
-    batch = reviews[(page - 1) * BATCH_SIZE_PRODUCT_REVIEWS : page * BATCH_SIZE_PRODUCT_REVIEWS]
+    reviews = list(collection_reviews.find({"product_id": product_details["product_id"]}).sort({"timestamp": -1}))
+    ROW_SIZE = 1
+    batch_size = 5
+    grid = st.columns(ROW_SIZE)
+    page = st.session_state.get("page_reviews", 1)
+    num_batches = ceil(len(reviews) / batch_size)
+    batch = reviews[(page - 1) * batch_size : page * batch_size]
 
     if len(reviews) > 0:
         col = 0
@@ -144,9 +150,9 @@ with st.spinner("Loading the product details..."):
                         st.write(s)
                     with rev_cols[1]:
                         st.write(f"*{review['review']}*")
-            col = (col + 1) % ROW_SIZE_PRODUCT_REVIEWS
+            col = (col + 1) % ROW_SIZE
     else:
-        st.info("No reviews yet. Be the first to review this product!")
+        st.write("No reviews yet. Be the first to review this product!")
 
     bottom = st.columns([10, 3, 10])
     with bottom[1]:
