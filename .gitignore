@@ -6,6 +6,9 @@
 .idea/
 database/mongo/
 img/products/
+*.zip
+*.csv
+*.parquet
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

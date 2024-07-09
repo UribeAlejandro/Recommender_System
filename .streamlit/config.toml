@@ -1,0 +1,14 @@
+[theme]
+base="light"
+
+[client]
+showSidebarNavigation = false
+showErrorDetails = false
+toolbarMode = "viewer"
+
+[server]
+headless=true
+enableStaticServing = true
+
+[browser]
+gatherUsageStats=false

@@ -25,3 +25,7 @@ jobs:
       - name: Code quality checks
         run: |
           ruff check .
+
+      - name: Run tests
+        run: |
+          pytest tests/

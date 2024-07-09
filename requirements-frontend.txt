@@ -1,0 +1,6 @@
+watchdog
+requests
+streamlit
+streamlit-card
+streamlit-modal
+plotly
