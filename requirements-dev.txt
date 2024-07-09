@@ -2,3 +2,5 @@ ruff
 pytest
 pytest-cov
 pre-commit
+
+-r requirements-backend.txt

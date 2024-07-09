@@ -5,7 +5,7 @@ from pymongo import MongoClient
 from pymongo.database import Database
 from pymongo.errors import CollectionInvalid
 
-from shein.constants import COLLECTION_DETAILS, DATABASE_URL
+from scraper.constants import COLLECTION_DETAILS, DATABASE_URL
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

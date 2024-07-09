@@ -1,7 +1,6 @@
 import streamlit as st
 from streamlit.runtime.scriptrunner import get_script_run_ctx
 from streamlit.source_util import get_pages
-from streamlit_server_state import server_state, server_state_lock
 
 from frontend.utils.auth import logout
 
@@ -39,9 +38,8 @@ def get_current_page_name():
 
 def make_sidebar():
     """Create the sidebar for the Streamlit app."""
-    with server_state_lock["authentication_status"]:
-        if "authentication_status" not in server_state:
-            server_state.authentication_status = False
+    if "authentication_status" not in st.session_state:
+        st.session_state["authentication_status"] = False
     with st.sidebar:
         st.markdown(
             """
@@ -71,7 +69,7 @@ def make_sidebar():
         st.markdown("<h3>About ℹ️</h3>", unsafe_allow_html=True)
         st.page_link(icon="ℹ️", page="pages/About.py", label="About", disabled=False)
 
-        if server_state.get("authentication_status", False):
+        if st.session_state.get("authentication_status", False):
             st.markdown("<h3>Products 📒</h3>", unsafe_allow_html=True)
             st.page_link(
                 icon="🎁",
@@ -84,7 +82,7 @@ def make_sidebar():
                 icon="🔥",
                 page="pages/Hot_Products.py",
                 label="Hot Products",
-                disabled=not server_state.get("authentication_status", True),
+                disabled=not st.session_state.get("authentication_status", True),
             )
             st.markdown("<h3>Reviews 📝</h3>", unsafe_allow_html=True)
             st.page_link(icon="📝", page="pages/Reviews.py", label="Reviews", disabled=False)
@@ -93,7 +91,7 @@ def make_sidebar():
             st.markdown("<h3>Stats 📊</h3>", unsafe_allow_html=True)
             st.page_link(icon="📊", page="pages/Stats.py", label="Stats", disabled=False)
 
-            if server_state.get("username", "guest") != "guest":
+            if st.session_state.get("username", "guest") != "guest":
                 if st.button("Log out", type="primary"):
                     logout()
         elif get_current_page_name() == "About":

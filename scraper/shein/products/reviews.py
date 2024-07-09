@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 
-from shein.constants import COLLECTION_REVIEWS
+from scraper.constants import COLLECTION_REVIEWS
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

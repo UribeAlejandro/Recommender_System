@@ -11,8 +11,7 @@ st.set_page_config(
 )
 make_sidebar()
 
-with open("README.html") as f:
-    st.html(f.read())
-
+with open("README.md") as f:
+    st.markdown(f.read())
 
 st.markdown(FOOTER, unsafe_allow_html=True)

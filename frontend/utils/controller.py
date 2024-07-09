@@ -43,7 +43,7 @@ def get_products(
         "page_size": page_size,
         "page_start": page_start,
     }
-    response = requests.get(f"{BACKEND_URL}/products", params=params)
+    response = requests.get(f"{BACKEND_URL}/products/", params=params)
     response = response.json()
 
     return response
@@ -86,7 +86,7 @@ def get_reviews(product_id: str, user_name: str) -> dict[str, str | dict[str, st
         The reviews
     """
     params = {"product_id": product_id, "user_name": user_name}
-    response = requests.get(f"{BACKEND_URL}/reviews", params=params)
+    response = requests.get(f"{BACKEND_URL}/reviews/", params=params)
     reviews = response.json()
 
     return reviews
@@ -119,20 +119,104 @@ def post_review(product_id: str, nickname: str, review: str, rating: str) -> req
         "rating": len(rating),
         "timestamp": datetime.now().isoformat(),
     }
-    response = requests.post(f"{BACKEND_URL}/reviews", json=payload)
+    response = requests.post(f"{BACKEND_URL}/reviews/", json=payload)
     return response
 
 
 def delete_review(mongo_id: str, product_id: str, nickname: str) -> requests.Response:
-    """Delete reviews."""
+    """Delete reviews.
+
+    Parameters
+    ----------
+    mongo_id: str
+        The MongoDB ID
+    product_id: str
+        The product ID
+    nickname: str
+        The nickname
+
+    Returns
+    -------
+    requests.Response
+        The response
+    """
     params = {"mongo_id": str(mongo_id), "product_id": product_id, "nickname": nickname}
-    r = requests.delete(f"{BACKEND_URL}/reviews", params=params)
+    r = requests.delete(f"{BACKEND_URL}/reviews/", params=params)
     return r
 
 
-def get_user_reviews(nickname: str):
-    """Get user reviews."""
+def get_user_reviews(nickname: str) -> list[dict]:
+    """
+    Get user reviews.
+
+    Parameters
+    ----------
+    nickname: str
+        The nickname
+
+    Returns
+    -------
+    List[dict]
+        The reviews
+    """
     params = {"nickname": nickname}
-    response = requests.get(f"{BACKEND_URL}/user/reviews", params=params)
+    response = requests.get(f"{BACKEND_URL}/user/reviews/", params=params)
     reviews = response.json()
     return reviews
+
+
+def get_recommendations(nickname: str) -> list[dict]:
+    """
+    Get recommendations.
+
+    Parameters
+    ----------
+    nickname: str
+        The nickname
+
+    Returns
+    -------
+    List[dict]
+        The recommendations
+    """
+    params = {"nickname": nickname}
+    products_req = requests.get(f"{BACKEND_URL}/recommender/", params=params)
+    products_json = products_req.json()
+
+    return products_json
+
+
+def get_rating_charts() -> dict:
+    """
+    Get rating charts.
+
+    Returns
+    -------
+    Dict
+        The rating charts
+    """
+    response = requests.get(f"{BACKEND_URL}/stats/")
+    rating_charts = response.json()
+
+    return rating_charts
+
+
+def get_similar_products(title) -> list[dict]:
+    """
+    Get similar products.
+
+    Parameters
+    ----------
+    title: str
+        The title of the product
+
+    Returns
+    -------
+    List[dict]
+        The similar products
+    """
+    params = {"title": title}
+    response = requests.get(f"{BACKEND_URL}/recommender/similar", params=params)
+    similar_products = response.json()
+
+    return similar_products

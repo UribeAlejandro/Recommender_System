@@ -1,13 +1,14 @@
+import base64
 import time
 from math import ceil
 
 import streamlit as st
 from PIL import Image
-from streamlit_server_state import server_state
+from streamlit_card import card
 
 from frontend.constants import BATCH_SIZE_PRODUCT_REVIEWS, FOOTER, ROW_SIZE_PRODUCT_REVIEWS
 from frontend.utils.config import hide_image_fullscreen, make_sidebar
-from frontend.utils.controller import get_product, get_reviews, post_review
+from frontend.utils.controller import get_product, get_reviews, get_similar_products, post_review
 
 _id = st.session_state.get("_id", None)
 page = st.session_state.get("page_reviews", 1)
@@ -46,11 +47,13 @@ with st.spinner("Loading the product details..."):
     price_real = f"~~${price_real:.2f}~~" if price_real else ""
     off_percent = f"{off_percent}%" if off_percent else "N/A"
 
-    user_name = server_state.get("username")
+    user_name = st.session_state.get("username")
     reviews = get_reviews(product_id, user_name)
 
     already_reviewed = reviews.get("already_reviewed", {})
     mean_rating = reviews.get("mean_rating", 0.0)
+
+    similar_prods = get_similar_products(title)
 
     st.subheader(title, divider=True)
     cols = st.columns([2, 1, 3], gap="small")
@@ -81,7 +84,7 @@ with st.spinner("Loading the product details..."):
                         st.write(f"{str(v).capitalize()}")
             st.divider()
             st.markdown("<h4>Review this product!</h4>", unsafe_allow_html=True)
-            if server_state.get("username") == "guest":
+            if st.session_state.get("username") == "guest":
                 st.error("You need to be logged in to review this product.")
             else:
                 if already_reviewed:
@@ -116,13 +119,55 @@ with st.spinner("Loading the product details..."):
                             )
                             submit = st.form_submit_button("Submit")
                             if submit:
-                                nickname = server_state.get("username")
+                                nickname = st.session_state.get("username")
                                 response = post_review(product_id, nickname, review, rating)
                                 if response.status_code == 201:
                                     st.success("Review submitted successfully!")
                                 else:
                                     st.error("Failed to submit review. Please try again.")
                                 st.rerun()
+    st.divider()
+    st.subheader("Other products you might like", divider=False)
+    grid = st.columns(len(similar_prods))
+    for i, similar_prod in enumerate(similar_prods):
+        with grid[i]:
+            with st.container(height=370):
+                _id = similar_prod["_id"]
+                title = similar_prod["title"]
+                img_route = similar_prod["image_path"]
+                price_discount = similar_prod["price_discount"]
+                price_real = similar_prod.get("price_real")
+                off_percent = similar_prod.get("off_percent", 0)
+                __off_percent = f"{off_percent}% off" if off_percent else ""
+                with open(img_route, "rb") as f:
+                    data = f.read()
+                    encoded = base64.b64encode(data)
+                data = "data:image/png;base64," + encoded.decode("utf-8")
+                product_card = card(
+                    title=f"{__off_percent}",
+                    text=f"${price_discount}",
+                    image=data,
+                    key=str(_id),
+                    styles={
+                        "card": {
+                            "width": "100%",
+                            "height": "180px",
+                            "margin": "0%",
+                            "box-shadow": "0 0 5px rgba(0,0,0,0.5)",
+                            "display": "inline-flex",
+                            "justify-content": "center",
+                        },
+                        "text": {"position": "absolute", "bottom": 0, "left": 50, "color": "green"},
+                        "title": {"position": "absolute", "bottom": 120, "right": 15, "color": "red"},
+                        "filter": {"background-color": "rgba(0, 0, 0, 0)"},
+                    },
+                )
+                st.write(title[0:90])
+
+                if product_card:
+                    st.session_state["_id"] = _id
+                    st.switch_page("pages/Product.py")
+
     st.divider()
     st.subheader("Product reviews", divider=False)
     st.markdown(f"<h4>Mean rating: {mean_rating:.1f} ⭐</h4>", unsafe_allow_html=True)

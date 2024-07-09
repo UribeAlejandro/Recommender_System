@@ -4,3 +4,5 @@ COPY requirements-recommender.txt requirements.txt
 COPY recommender recommender
 
 RUN pip install --no-cache-dir -r requirements.txt
+
+CMD python -m recommender.main

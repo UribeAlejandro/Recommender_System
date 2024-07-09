@@ -1,0 +1,6 @@
+pinecone-client
+langchain-community
+gpt4all
+transformers
+torch
+torchvision

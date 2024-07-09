@@ -103,7 +103,7 @@ docker compose -f docker-compose-scrapper.yml down -v
 
 #### Transform
 
-A pre-process is done to the data, after the extraction. The script [shein/main.py](shein/main.py) does so.
+A pre-process is done to the data, after the extraction. The script [shein/main.py](modules/shein/main.py) does so.
 
 Then, a second processing might be done. Open a `MongoDB` console and run the content of [database/scripts/etl.js](database/scripts/etl.js) to transform the data.
 

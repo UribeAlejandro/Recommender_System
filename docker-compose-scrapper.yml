@@ -16,14 +16,13 @@ services:
     networks:
       - scraper-selenium
 
-  scrapper:
+  scraper:
     build:
       context: .
       dockerfile: Dockerfile-scrapper
-    image: scrapper
-    container_name: scrapper
+    image: scraper
+    container_name: scraper
     restart: unless-stopped
-    command: python -m scrapper.main
     depends_on:
       - database
       - standalone-selenium
@@ -33,6 +32,8 @@ services:
     networks:
       - scraper-db
       - scraper-selenium
+    volumes:
+      - ./img:/img
 
 networks:
   scraper-db:

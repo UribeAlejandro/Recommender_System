@@ -1,7 +1,6 @@
 from time import sleep
 
 import streamlit as st
-from streamlit_server_state import no_rerun, server_state
 
 from frontend.constants import FOOTER
 from frontend.utils.config import make_sidebar
@@ -20,7 +19,7 @@ st.markdown(
     'style="height:50px;">Doge Market</h1>',
     unsafe_allow_html=True,
 )
-if not server_state.get("authentication_status", False):
+if not st.session_state.get("authentication_status", False):
     with st.container(border=True):
         st.write("Please log in to continue (username `test` should work.")
         st.info("You can also continue as a guest.")
@@ -35,18 +34,17 @@ if not server_state.get("authentication_status", False):
         with cols[0]:
             login = st.button("Log in", type="primary", key="login", disabled=username == "")
         with cols[1]:
-            register = st.button("Register", type="secondary", key="register", disabled=username != "")
+            register = st.button("Register", type="secondary", key="register", disabled=True)
         with cols[3]:
             guest = st.button("Continue as guest", type="primary", key="guest", disabled=username != "")
 
         if login:
             if username != "guest":
                 with st.spinner("Checking credentials..."):
-                    with no_rerun:
-                        server_state.authentication_status = True
-                        server_state.username = username
-                        sleep(1)
-                st.switch_page("pages/Products.py")
+                    st.session_state["authentication_status"] = True
+                    st.session_state["username"] = username
+                    sleep(1)
+                st.switch_page("pages/Hot_Products.py")
             else:
                 with st.spinner("Checking credentials..."):
                     sleep(2)
@@ -54,12 +52,11 @@ if not server_state.get("authentication_status", False):
 
     if guest:
         with st.spinner("Redirecting to products page..."):
-            with no_rerun:
-                server_state.authentication_status = True
-                server_state.username = "guest"
-        st.switch_page("pages/Products.py")
+            st.session_state["authentication_status"] = True
+            st.session_state["username"] = "guest"
+        st.switch_page("pages/Hot_Products.py")
 else:
     with st.spinner("Redirecting to products page..."):
-        st.switch_page("pages/Products.py")
+        st.switch_page("pages/Hot_Products.py")
 
 st.markdown(FOOTER, unsafe_allow_html=True)

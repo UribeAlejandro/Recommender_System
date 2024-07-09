@@ -1,9 +1,9 @@
 import plotly
-import plotly.express as px
 import streamlit as st
 
 from frontend.constants import FOOTER
 from frontend.utils.config import hide_image_fullscreen, make_sidebar
+from frontend.utils.controller import get_rating_charts
 
 st.set_page_config(
     layout="centered",
@@ -17,17 +17,18 @@ hide_image_fullscreen()
 st.header("📊 Stats")
 st.subheader("Stats", divider=True)
 
-st.write("This is a simple example of a distribution plot.")
-fig = px.histogram(x=range(10), y=range(10))
 
-html = fig.to_json()
+charts = get_rating_charts()
 
-fig = plotly.io.from_json(html)
-# .read_json(html)
-
+rating_distribution = charts["rating_distribution"]
+fig = plotly.io.from_json(rating_distribution)
 st.plotly_chart(fig, use_container_width=True)
+
+# rating_distribution_price = charts["rating_distribution_price"]
+# fig = plotly.io.from_json(rating_distribution_price)
+# st.plotly_chart(fig, use_container_width=True)
 
 
 # Plot!
-st.plotly_chart(fig, use_container_width=True)
+# st.plotly_chart(fig, use_container_width=True)
 st.markdown(FOOTER, unsafe_allow_html=True)

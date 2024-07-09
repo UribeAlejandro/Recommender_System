@@ -1,14 +1,14 @@
-from shein.constants import COLLECTION_INDEX, DATABASE_NAME
-from shein.scrapper.products.details import get_details
-from shein.scrapper.products.images import download_images
-from shein.scrapper.products.list import list_products
-from shein.scrapper.utils.database import (
+from scraper.constants import COLLECTION_INDEX, DATABASE_NAME
+from scraper.shein.products.details import get_details
+from scraper.shein.products.images import download_images
+from scraper.shein.products.list import list_products
+from scraper.shein.utils.database import (
     clean_price_column,
     create_collection_index,
     get_categories,
     get_mongo_database,
 )
-from shein.scrapper.utils.scraper import get_driver
+from scraper.shein.utils.driver import get_driver
 
 if __name__ == "__main__":
     driver = get_driver()

@@ -59,7 +59,7 @@ async def post_review(payload: ReviewPayload):
     dict
         The reviews
     """
-    await ProductReview(**payload.dict()).insert()
+    await ProductReview(**payload.model_dump()).insert()
 
     return {"status": "success"}
 
