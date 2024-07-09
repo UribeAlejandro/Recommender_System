@@ -29,14 +29,17 @@ async def user_recommendations(nickname: str):
     """
     number_of_reviews = await ProductReview.find(ProductReview.nickname == nickname).count()
 
-    user_s_most_reviews = await ProductReview.aggregate(
-        [{"$sortByCount": "$nickname"}, {"$project": {"_id": 1, "count": 1}}, {"$limit": 15}]
-    ).to_list()
-    print(user_s_most_reviews)
+    # user_s_most_reviews = await ProductReview.aggregate(
+    #     [{"$sortByCount": "$nickname"}, {"$project": {"_id": 1, "count": 1}}, {"$limit": 15}]
+    # ).to_list()
+
+    seen_products = await ProductReview.find(ProductReview.nickname == nickname).to_list()
+    seen_products_ids = [product.product_id for product in seen_products]
 
     if number_of_reviews <= 5:
         model = "40 principales"
         pipeline = [
+            {"$match": {"product_id": {"$nin": seen_products_ids}}},
             {"$group": {"_id": "$product_id", "average_rating": {"$avg": "$rating"}, "review_count": {"$sum": 1}}},
             {"$sort": {"review_count": -1, "average_rating": -1}},
             {"$limit": 40},
@@ -50,12 +53,12 @@ async def user_recommendations(nickname: str):
             In(ProductDetails.product_id, products_ids),
         )
         items = await result.to_list()
+        number = await result.count()
 
     else:
         items = []
         model = "No model"
-
-    number = await result.count()
+        number = 0
     return {"items": items, "number": number, "model": model}
 
 

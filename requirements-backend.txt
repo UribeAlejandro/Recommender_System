@@ -1,4 +1,5 @@
 fastapi
+fastapi-cli
 pymongo
 pydantic
 motor[srv]

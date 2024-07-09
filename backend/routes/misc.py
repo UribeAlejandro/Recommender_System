@@ -6,6 +6,19 @@ router = APIRouter()
 logger = logging.getLogger("uvicorn")
 
 
+@router.get("/", status_code=200)
+async def get_index() -> str:
+    """
+    Get index.
+
+    Returns
+    -------
+    str
+        Welcome message
+    """
+    return "Welcome to the API!"
+
+
 @router.get("/health")
 async def health() -> dict:
     """

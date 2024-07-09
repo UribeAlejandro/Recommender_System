@@ -5,7 +5,6 @@ services:
       dockerfile: Dockerfile-backend
     image: backend
     restart: unless-stopped
-    command: uvicorn backend.main:app --reload --workers 1 --host 0.0.0.0 --port $BACKEND_PORT
     expose:
       - $BACKEND_PORT
     networks:
@@ -43,8 +42,8 @@ services:
     volumes:
       - ./etc/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
-      - frontend
       - backend
+      - frontend
     networks:
       - back
       - nginx
