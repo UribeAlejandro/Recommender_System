@@ -1,4 +1,5 @@
 import logging
+from functools import lru_cache
 
 from langchain_community.embeddings import GPT4AllEmbeddings
 from pinecone import Index, Pinecone, QueryResponse
@@ -8,6 +9,7 @@ from backend.constants import EMBEDDINGS_MODEL, PINECONE_API_KEY, PINECONE_INDEX
 logger = logging.getLogger(__name__)
 
 
+@lru_cache
 def get_pinecone_index() -> Index:
     """
     Get Pinecone index.
@@ -23,7 +25,7 @@ def get_pinecone_index() -> Index:
     return index
 
 
-def get_recommendations(search_term: str, top_k: int = 5) -> QueryResponse:
+def get_recommendations(search_term: str, mongo_id: str, top_k: int = 5) -> QueryResponse:
     """
     Get recommendations from Pinecone index.
 
@@ -31,6 +33,8 @@ def get_recommendations(search_term: str, top_k: int = 5) -> QueryResponse:
     ----------
     search_term: str
         Search term
+    mongo_id: str
+        MongoDB ID
     top_k: int (default=5)
         Number of recommendations to return
 
@@ -39,9 +43,10 @@ def get_recommendations(search_term: str, top_k: int = 5) -> QueryResponse:
     QueryResponse
         Recommendations
     """
+    filter_query = {"_id": {"$ne": mongo_id}}
     pinecone_index = get_pinecone_index()
     embed = get_embeddings(search_term)
-    res = pinecone_index.query(vector=embed, top_k=top_k, include_metadata=True)
+    res = pinecone_index.query(vector=embed, filter=filter_query, top_k=top_k, include_metadata=True)
     return res
 
 

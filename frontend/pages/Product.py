@@ -53,7 +53,7 @@ with st.spinner("Loading the product details..."):
     already_reviewed = reviews.get("already_reviewed", {})
     mean_rating = reviews.get("mean_rating", 0.0)
 
-    similar_prods = get_similar_products(title)
+    similar_prods = get_similar_products(str(_id))
 
     st.subheader(title, divider=True)
     cols = st.columns([2, 1, 3], gap="small")

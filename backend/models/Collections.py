@@ -79,6 +79,8 @@ class ProductDetails(Document):
 
         name = COLLECTION_DETAILS
         max_nesting_depths_per_field = {"description_items": 1}
+        use_cache = True
+        cache_capacity = 5
 
 
 class ProductReview(Document):

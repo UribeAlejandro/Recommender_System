@@ -6,7 +6,7 @@ from bson import ObjectId
 from fastapi import APIRouter
 
 from backend.models.Collections import ProductDetails, ProductReview
-from backend.recommender.utils import get_recommendations
+from backend.utils.recommender import get_recommendations
 
 router = APIRouter(prefix="/recommender")
 logger = logging.getLogger("uvicorn")
@@ -63,23 +63,28 @@ async def user_recommendations(nickname: str):
 
 
 @router.get("/similar", status_code=200, response_model=None)
-async def get_similar_products(title: str) -> list[ProductDetails]:
+async def get_similar_products(mongo_id: str) -> list[ProductDetails]:
     """
     Get similar products.
 
     Parameters
     ----------
-    title : str
-        The title
+    mongo_id : str
+        The product MongoDB ID
 
     Returns
     -------
     list[ProductDetails]
         The similar products
     """
-    res = get_recommendations(title, 7)
-    mongo_ids = [ObjectId(r.metadata["_id"]) for r in res.matches]
-    products = await ProductDetails.find(In(ProductDetails.id, mongo_ids), Not(ProductDetails.title == title)).to_list()
-    products = products[:5]
+    mongo_id = ObjectId(mongo_id)
 
+    product = await ProductDetails.get(mongo_id)
+    product = product.model_dump()
+    search_term = f"{product['title']} {product['main_category']} {product['category']} {product['subcategory']}"
+
+    res = get_recommendations(search_term, str(mongo_id), 5)
+    mongo_ids = [ObjectId(r.metadata["_id"]) for r in res.matches]
+
+    products = await ProductDetails.find(Not(ProductDetails.id == mongo_id), In(ProductDetails.id, mongo_ids)).to_list()
     return products

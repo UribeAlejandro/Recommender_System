@@ -201,21 +201,21 @@ def get_rating_charts() -> dict:
     return rating_charts
 
 
-def get_similar_products(title) -> list[dict]:
+def get_similar_products(mongo_id: str) -> list[dict]:
     """
     Get similar products.
 
     Parameters
     ----------
-    title: str
-        The title of the product
+    mongo_id: str
+        The product MongoDB ID
 
     Returns
     -------
     List[dict]
         The similar products
     """
-    params = {"title": title}
+    params = {"mongo_id": mongo_id}
     response = requests.get(f"{BACKEND_URL}/recommender/similar", params=params)
     similar_products = response.json()
 
