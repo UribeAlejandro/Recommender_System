@@ -22,7 +22,7 @@ a:hover,  a:active {
     left: 0;
     bottom: 0;
     width: 100%;
-    background-color: rgba(255,255,255,0.8);
+    background-color: rgba(255,255,255,0);
     color: black;
     text-align: center;
     border-top: 1px solid  #7F7F7F;

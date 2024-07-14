@@ -34,7 +34,7 @@ async def user_recommendations(nickname: str):
     seen_products = await ProductReview.find(ProductReview.nickname == nickname).to_list()
     seen_products_ids = [product.product_id for product in seen_products]
 
-    if number_of_reviews <= 5:
+    if number_of_reviews < 11:
         model = "40 principales"
         logger.info("%s", model)
         items, number = await main_forty_products(seen_products_ids)
