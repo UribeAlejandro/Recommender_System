@@ -9,8 +9,9 @@ from recommender.utils.sentiment import sentiment_analysis
 def build_collaborative_filter(connection: MongoClient) -> None:
     """Build collaborative filtering recommender."""
     data = preprocess(connection)
+
     predictions = collaborative_filter(data, connection)
-    load_to_collection(predictions, connection)
+    load_to_collection(predictions, connection, "recommendations-collaborative")
 
 
 def preprocess(connection: MongoClient) -> pd.DataFrame:
