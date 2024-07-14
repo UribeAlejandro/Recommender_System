@@ -185,6 +185,6 @@ async def collaborative_filtering(
     result = ProductDetails.find(In(ProductDetails.product_id, [r[1] for r in all_recomendaciones]), limit=max_items)
 
     items = await result.to_list()
-    number = await result.count()
+    number = len(items)
 
     return items, number

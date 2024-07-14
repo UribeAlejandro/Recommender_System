@@ -10,4 +10,4 @@ gpt4all
 pinecone-client
 langchain
 langchain-community
-surprise
+scikit-surprise

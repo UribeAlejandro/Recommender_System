@@ -8,3 +8,4 @@ surprise
 mlflow
 scikit-learn
 seaborn
+scikit-surprise
