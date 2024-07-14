@@ -66,8 +66,6 @@ def make_sidebar():
         st.markdown("<h1>Navigation 🚀</h1>", unsafe_allow_html=True)
         st.markdown("<h3>Home 🏠</h3>", unsafe_allow_html=True)
         st.page_link(icon="🏠", page="main.py", label="Home", disabled=False)
-        st.markdown("<h3>About ℹ️</h3>", unsafe_allow_html=True)
-        st.page_link(icon="ℹ️", page="pages/About.py", label="About", disabled=False)
 
         if st.session_state.get("authentication_status", False):
             st.markdown("<h3>Products 📒</h3>", unsafe_allow_html=True)
@@ -86,8 +84,6 @@ def make_sidebar():
             )
             st.markdown("<h3>Reviews 📝</h3>", unsafe_allow_html=True)
             st.page_link(icon="📝", page="pages/Reviews.py", label="Reviews", disabled=False)
-            st.markdown("<h3>Account 👤</h3>", unsafe_allow_html=True)
-            st.page_link(icon="👤", page="main.py", label="Account Management", disabled=True)
             st.markdown("<h3>Stats 📊</h3>", unsafe_allow_html=True)
             st.page_link(icon="📊", page="pages/Stats.py", label="Stats", disabled=False)
 

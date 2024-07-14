@@ -1,3 +1,5 @@
+import logging
+
 from beanie.operators import And, Eq
 from bson import ObjectId
 from fastapi import APIRouter
@@ -7,7 +9,10 @@ from backend.models.Collections import ProductReview
 from backend.models.Payload import ReviewPayload
 from backend.models.Response import ProductReviews
 
-router = APIRouter(prefix="/reviews")
+router = APIRouter(prefix="/reviews", redirect_slashes=False)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("uvicorn")
 
 
 @router.get("/", status_code=200, response_model=ProductReviews)
@@ -27,6 +32,7 @@ async def get_reviews(product_id: str, user_name: str) -> ProductReviews:
     ProductReviews
         The reviews
     """
+    logger.info("Getting reviews...")
     already_reviewed = await ProductReview.find(
         And(Eq(ProductReview.product_id, product_id), Eq(ProductReview.nickname, user_name))
     ).to_list()
@@ -59,6 +65,7 @@ async def post_review(payload: ReviewPayload):
     dict
         The reviews
     """
+    logger.info("Posting review...")
     await ProductReview(**payload.model_dump()).insert()
 
     return {"status": "success"}
@@ -83,6 +90,7 @@ async def delete_review(mongo_id: str, product_id: str, nickname: str) -> dict:
     dict
         The status
     """
+    logger.info("Deleting review...")
     try:
         await (
             ProductReview.find(ProductReview.id == ObjectId(mongo_id))

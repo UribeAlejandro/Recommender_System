@@ -2,7 +2,9 @@ import logging
 
 from fastapi import APIRouter
 
-router = APIRouter()
+router = APIRouter(redirect_slashes=False)
+
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("uvicorn")
 
 
@@ -16,6 +18,7 @@ async def get_index() -> str:
     str
         Welcome message
     """
+    logger.info("Getting index...")
     return "Welcome to the API!"
 
 

@@ -8,7 +8,9 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from backend.constants import DATABASE_NAME, MONGO_URI
 from backend.models import __beanie_models__
 from backend.routes import misc, products, recommender, reviews, stats, user
+from backend.utils.recommender import get_pinecone_index
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("uvicorn")
 
 
@@ -49,11 +51,14 @@ async def lifespan(app: FastAPI) -> AbstractAsyncContextManager:  # noqa
     ------
     AbstractAsyncContextManager
     """
+    logger.info("Setting up lifespan...")
     logger.info("Adding DB connection...")
     client = AsyncIOMotorClient(MONGO_URI)
 
     logger.info("Setting up Beanie...")
     await init_beanie(database=client[DATABASE_NAME], document_models=__beanie_models__)
+
+    get_pinecone_index()
     yield
 
     logger.info("Shutting down...")

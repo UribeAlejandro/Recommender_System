@@ -5,10 +5,11 @@ from beanie.operators import NE, And, Exists, In, RegEx
 from bson import ObjectId
 from fastapi import APIRouter
 
-from backend.models.Collections import ProductDetails, ProductsPaged
-from backend.models.Response import ProductsResponse
+from backend.models.Collections import ProductDetails
+from backend.models.Response import ProductsPaged, ProductsResponse
 
-router = APIRouter(prefix="/products")
+router = APIRouter(prefix="/products", redirect_slashes=False)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("uvicorn")
 
 

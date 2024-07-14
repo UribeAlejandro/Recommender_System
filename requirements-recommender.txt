@@ -4,3 +4,7 @@ gpt4all
 transformers
 torch
 torchvision
+surprise
+mlflow
+scikit-learn
+seaborn
