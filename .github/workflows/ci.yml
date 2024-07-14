@@ -2,6 +2,12 @@ name: Continuous Integration
 
 on: [ push, pull_request ]
 
+env:
+  MONGO_DATABASE: ${{ secrets.MONGO_DATABASE }}
+  MONGO_URI: ${{ secrets.MONGO_URI }}
+  PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
+  PINECONE_INDEX_NAME: ${{ secrets.PINECONE_INDEX_NAME }}
+
 jobs:
   build:
     name: Build & Test

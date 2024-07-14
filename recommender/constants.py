@@ -15,3 +15,8 @@ PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
 
 EMBEDDINGS_MODEL = "all-MiniLM-L6-v2.gguf2.f16.gguf"
 PATH_PRODUCT_DETAILS = "data/raw/shein-mirror.csv"
+
+MLFLOW_REGISTRY_URI = os.getenv("MLFLOW_REGISTRY_URI")
+MLFLOW_EXPERIMENT_NAME = os.getenv("MLFLOW_EXPERIMENT_NAME")
+
+SENTIMENT_MODEL = "nlptown/bert-base-multilingual-uncased-sentiment"

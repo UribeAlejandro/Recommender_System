@@ -9,6 +9,7 @@ img/products/
 *.zip
 *.csv
 *.parquet
+mlruns/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

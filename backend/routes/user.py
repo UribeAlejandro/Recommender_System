@@ -1,10 +1,15 @@
+import logging
+
 from beanie.operators import Eq
 from fastapi import APIRouter
 from pymongo import DESCENDING
 
 from backend.models.Collections import ProductReview
 
-router = APIRouter(prefix="/user")
+router = APIRouter(prefix="/user", redirect_slashes=False)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("uvicorn")
 
 
 @router.get("/reviews", status_code=200)
