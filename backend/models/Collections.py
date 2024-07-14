@@ -1,13 +1,10 @@
 import time
 from datetime import datetime
-from typing import Generic, TypeVar
 
 from beanie import Document
 from pydantic import Field
 
 from backend.constants import COLLECTION_DETAILS, COLLECTION_REVIEWS
-
-T = TypeVar("T")
 
 
 class ProductDetails(Document):
@@ -121,65 +118,3 @@ class ProductReview(Document):
         """
 
         name = COLLECTION_REVIEWS
-
-
-class ProductsPaged(Generic[T]):
-    """
-    Paged.
-
-    Attributes
-    ----------
-    items : List[T]
-        The items list
-    size : int
-        The size of the items list
-    more_pages : bool
-        The more pages flag
-    applicable_pets : List[str]
-        The applicable pets list
-    categories : List[str]
-        The categories list
-    subcategories : List[str]
-        The subcategories list
-    """
-
-    items: list[T]
-    size: int
-    more_pages: bool
-    applicable_pets: list[str]
-    categories: list[str]
-    subcategories: list[str]
-
-    def __init__(
-        self,
-        number: int,
-        items: list[T],
-        more_pages: bool,
-        applicable_pets: list[str],
-        categories: list[str],
-        subcategories: list[str],
-    ):
-        """
-        Initialize the Paged.
-
-        Parameters
-        ----------
-        number: int
-            The number of products
-        items: List[T]
-            The products list
-        more_pages: bool
-            The more pages flag
-        applicable_pets: List[str]
-            The applicable pets list
-        categories: List[str]
-            The categories list
-        subcategories: List[str]
-            The subcategories list
-        """
-        self.items = items
-        self.number = number
-        self.more_pages = more_pages
-        self.applicable_pets = applicable_pets
-        self.categories = categories
-        self.subcategories = subcategories

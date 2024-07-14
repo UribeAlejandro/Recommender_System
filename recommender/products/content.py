@@ -12,7 +12,7 @@ from recommender.constants import (
     PINECONE_INDEX_NAME,
     TOTAL_ROWS,
 )
-from recommender.utils.etl import extract_data, load_data, transform_data
+from recommender.utils.similar_products import extract_data, load_data, transform_data
 
 logger = logging.getLogger(__name__)
 

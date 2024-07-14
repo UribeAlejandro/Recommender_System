@@ -2,8 +2,8 @@ import plotly
 import streamlit as st
 
 from frontend.constants import FOOTER
+from frontend.controller.stats import get_rating_charts
 from frontend.utils.config import hide_image_fullscreen, make_sidebar
-from frontend.utils.controller import get_rating_charts
 
 st.set_page_config(
     layout="centered",

@@ -6,9 +6,11 @@ from bson import ObjectId
 from fastapi import APIRouter
 
 from backend.models.Collections import ProductDetails, ProductReview
-from backend.utils.recommender import get_recommendations
+from backend.utils.recommender import collaborative_filtering, get_recommendations, main_forty_products
 
-router = APIRouter(prefix="/recommender")
+router = APIRouter(prefix="/recommender", redirect_slashes=False)
+
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("uvicorn")
 
 
@@ -27,38 +29,22 @@ async def user_recommendations(nickname: str):
     dict
         The user recommendations
     """
+    logger.info("Getting recommendations for %s", nickname)
     number_of_reviews = await ProductReview.find(ProductReview.nickname == nickname).count()
-
-    # user_s_most_reviews = await ProductReview.aggregate(
-    #     [{"$sortByCount": "$nickname"}, {"$project": {"_id": 1, "count": 1}}, {"$limit": 15}]
-    # ).to_list()
-
     seen_products = await ProductReview.find(ProductReview.nickname == nickname).to_list()
     seen_products_ids = [product.product_id for product in seen_products]
 
     if number_of_reviews <= 5:
         model = "40 principales"
-        pipeline = [
-            {"$match": {"product_id": {"$nin": seen_products_ids}}},
-            {"$group": {"_id": "$product_id", "average_rating": {"$avg": "$rating"}, "review_count": {"$sum": 1}}},
-            {"$sort": {"review_count": -1, "average_rating": -1}},
-            {"$limit": 40},
-            {"$project": {"_id": 1}},
-        ]
-
-        products = await ProductReview.aggregate(pipeline).to_list()
-        products_ids = [product["_id"] for product in products]
-
-        result = ProductDetails.find(
-            In(ProductDetails.product_id, products_ids),
-        )
-        items = await result.to_list()
-        number = await result.count()
-
+        logger.info("%s", model)
+        items, number = await main_forty_products(seen_products_ids)
     else:
-        items = []
-        model = "No model"
-        number = 0
+        model = "Collaborative filtering"
+        logger.info("%s", model)
+        logger.info("User %s has %s reviews", nickname, number_of_reviews)
+
+        items, number = await collaborative_filtering(seen_products_ids, nickname)
+
     return {"items": items, "number": number, "model": model}
 
 
@@ -80,6 +66,7 @@ async def get_similar_products(mongo_id: str) -> list[ProductDetails]:
     mongo_id = ObjectId(mongo_id)
 
     product = await ProductDetails.get(mongo_id)
+
     product = product.model_dump()
     search_term = f"{product['title']} {product['main_category']} {product['category']} {product['subcategory']}"
 
